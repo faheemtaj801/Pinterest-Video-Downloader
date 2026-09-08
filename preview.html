@@ -1,0 +1,175 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pinterest Video Downloader — UI Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{font-family:'Inter',sans-serif;background:#FAFBFF;color:#1a1f36;-webkit-font-smoothing:antialiased}
+    .nav{background:rgba(250,251,255,0.95);backdrop-filter:blur(16px);border-bottom:1px solid rgba(219,234,254,0.6);box-shadow:0 1px 12px rgba(37,99,235,0.07);position:sticky;top:0;z-index:50}
+    .nav-inner{max-width:1152px;margin:0 auto;padding:0 16px;height:64px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+    .brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+    .brand-logo{width:32px;height:32px;border-radius:12px;background:#2563eb;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.20);color:#fff;flex-shrink:0}
+    .brand-name{font-weight:800;font-size:1.25rem;letter-spacing:-.025em;color:#111827}
+    .brand-name span{color:#2563eb}
+    .nav-links{display:flex;align-items:center;gap:4px}
+    .nav-link{display:inline-flex;align-items:center;padding:8px 12px;border-radius:12px;font-size:.875rem;font-weight:600;color:#6b7280;text-decoration:none;transition:color .2s,background .2s}
+    .nav-link:hover{color:#2563eb;background:#eff6ff}
+    .hero{background:linear-gradient(160deg,#1a3fd4 0%,#2152e8 35%,#1e45d6 65%,#1535b8 100%);padding:64px 16px 80px;text-align:center}
+    .hero-container{max-width:768px;margin:0 auto}
+    .hero h1{font-size:clamp(1.8rem,5vw,3.5rem);font-weight:800;color:#fff;line-height:1.15;letter-spacing:-.025em;margin-bottom:20px}
+    .hero p{font-size:clamp(1rem,2.5vw,1.25rem);font-weight:500;color:rgba(255,255,255,.80);max-width:576px;margin:0 auto 40px;line-height:1.6}
+    .input-container{width:100%;max-width:672px;margin:0 auto}
+    .input-wrap{display:flex;align-items:center;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,.20);overflow:hidden;transition:box-shadow .2s}
+    .input-wrap:focus-within{box-shadow:0 8px 48px rgba(0,0,0,.28)}
+    .input-icon{padding:0 12px 0 20px;color:#9ca3af;display:flex;align-items:center;flex-shrink:0}
+    .url-input{flex:1;border:none;outline:none;background:transparent;padding:16px 8px;font-family:'Inter',sans-serif;font-size:1rem;color:#1f2937;min-width:0}
+    .url-input::placeholder{color:#9ca3af}
+    .paste-btn{display:inline-flex;align-items:center;gap:6px;background:transparent;border:none;border-left:1px solid #f1f5f9;color:#6b7280;font-family:'Inter',sans-serif;font-size:.875rem;font-weight:700;padding:12px 16px;cursor:pointer;flex-shrink:0;transition:color .15s}
+    .paste-btn:hover{color:#2563eb}
+    .dl-submit{display:inline-flex;align-items:center;gap:8px;background:#2563eb;color:#fff;border:none;border-radius:12px;padding:15px 28px;margin:8px;font-family:'Inter',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.20);white-space:nowrap;transition:transform .18s ease,box-shadow .18s ease,background .18s ease}
+    .dl-submit:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,.28);background:#1d4ed8}
+    .terms-note{margin-top:16px;font-size:.875rem;color:rgba(255,255,255,.50);text-align:center}
+    .terms-note a{color:rgba(255,255,255,.70);text-decoration:underline;text-underline-offset:2px}
+    .state{display:none}
+    .state.active{display:block}
+    .loading-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;padding:40px 16px}
+    .dot-loader{display:flex;gap:8px}
+    .dot-loader span{width:9px;height:9px;border-radius:50%;background:#fff;animation:pulseDot 1.4s ease-in-out infinite}
+    .dot-loader span:nth-child(2){animation-delay:.2s}
+    .dot-loader span:nth-child(3){animation-delay:.4s}
+    @keyframes pulseDot{0%,80%,100%{transform:scale(.65);opacity:.4}40%{transform:scale(1.15);opacity:1}}
+    .loading-text{color:rgba(255,255,255,.60);font-size:.875rem}
+    .result-outer{padding:0 16px 64px;background:#FAFBFF}
+    .result-container{max-width:672px;margin:0 auto}
+    .result-card{background:#fff;border-radius:24px;box-shadow:0 4px 24px rgba(37,99,235,.08),0 1px 4px rgba(0,0,0,.04);border:1px solid #f1f5f9;overflow:hidden;animation:fadeUp .5s cubic-bezier(.22,1,.36,1) forwards}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+    .result-top{padding:24px}
+    .result-flex{display:flex;gap:16px;align-items:flex-start}
+    .thumb-box{position:relative;flex-shrink:0;width:96px;height:128px;border-radius:16px;overflow:hidden;background:#f1f5f9;box-shadow:0 4px 12px rgba(0,0,0,.10)}
+    .thumb-box img{width:100%;height:100%;object-fit:cover;display:block}
+    .duration-badge{position:absolute;bottom:6px;left:6px;background:rgba(0,0,0,.65);color:#fff;font-family:monospace;font-size:.75rem;padding:2px 6px;border-radius:6px}
+    .result-details{flex:1;min-width:0;padding-top:4px}
+    .author-name{font-size:.75rem;font-weight:600;color:#2563eb;margin-bottom:8px;display:block}
+    .result-title{font-size:1rem;font-weight:700;color:#111827;line-height:1.4;margin-bottom:12px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+    .badges{display:flex;flex-wrap:wrap;gap:8px}
+    .badge{display:inline-flex;align-items:center;gap:4px;font-size:.75rem;font-weight:600;padding:4px 10px;border-radius:9999px}
+    .badge-nowm{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}
+    .badge-hd{background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0}
+    .divider{height:1px;background:#f1f5f9;margin:0 24px}
+    .formats{padding:24px;display:flex;flex-direction:column;gap:12px}
+    .formats-label{font-size:.75rem;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
+    .dl-btn{display:flex;align-items:center;gap:14px;width:100%;padding:18px 22px;border-radius:14px;font-family:'Inter',sans-serif;font-weight:700;font-size:1rem;text-decoration:none;border:1.5px solid transparent;cursor:pointer;transition:transform .17s ease,box-shadow .17s ease,background .17s ease}
+    .dl-btn:hover{transform:translateY(-2px)}
+    .dl-btn-mp4{background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;box-shadow:0 4px 16px rgba(37,99,235,.30)}
+    .dl-btn-mp4:hover{box-shadow:0 6px 22px rgba(37,99,235,.45)}
+    .dl-btn-hd{background:#fff;color:#1d4ed8;border-color:#bfdbfe;box-shadow:0 2px 10px rgba(37,99,235,.08)}
+    .dl-btn-hd:hover{background:#eff6ff;border-color:#93c5fd;box-shadow:0 4px 16px rgba(37,99,235,.14)}
+    .dl-btn-img{background:#fff;color:#0369a1;border-color:#bae6fd;box-shadow:0 2px 10px rgba(3,105,161,.07)}
+    .dl-btn-img:hover{background:#f0f9ff;border-color:#7dd3fc;box-shadow:0 4px 16px rgba(3,105,161,.13)}
+    .dl-icon{width:36px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .dl-btn-mp4 .dl-icon{background:rgba(255,255,255,.20);color:#fff}
+    .dl-btn-hd .dl-icon{background:#eff6ff;color:#2563eb}
+    .dl-btn-img .dl-icon{background:#f0f9ff;color:#0284c7}
+    .dl-text{flex:1}
+    .dl-title{font-size:.9375rem;font-weight:700;line-height:1.2}
+    .dl-subtitle{font-size:.75rem;opacity:.80;margin-top:2px}
+    .dl-arrow{opacity:.80;flex-shrink:0}
+    .expire-note{text-align:center;font-size:.75rem;color:#d1d5db;padding:0 20px 16px}
+    .reset-wrap{margin-top:16px;text-align:center}
+    .reset-btn{background:transparent;border:none;color:#2563eb;font-family:'Inter',sans-serif;font-size:.875rem;font-weight:600;cursor:pointer}
+    .reset-btn:hover{color:#1e40af;text-decoration:underline}
+    .error-outer{padding:0 16px 64px;background:#FAFBFF}
+    .error-container{max-width:580px;margin:0 auto}
+    .error-card{background:#fff;border-radius:24px;padding:32px 24px;text-align:center;box-shadow:0 4px 24px rgba(37,99,235,.08);border:1px solid #f1f5f9}
+    .error-icon{width:64px;height:64px;border-radius:50%;background:#fee2e2;color:#dc2626;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+    .error-title{font-size:1.25rem;font-weight:800;color:#0f172a;margin-bottom:8px}
+    .error-desc{font-size:.9375rem;color:#475569;margin-bottom:24px;line-height:1.6}
+    .btn-primary{display:inline-flex;align-items:center;gap:8px;background:#2563eb;color:#fff;border:none;border-radius:12px;padding:14px 28px;font-family:'Inter',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.20);transition:transform .18s ease,background .18s ease}
+    .btn-primary:hover{transform:translateY(-1px);background:#1d4ed8}
+    .section-how,.section-faq{padding:56px 16px;background:#fff}
+    .section-features{padding:56px 16px;background:#FAFBFF}
+    .section-container{max-width:1040px;margin:0 auto}
+    .section-container-narrow{max-width:672px;margin:0 auto}
+    .section-header{text-align:center;margin-bottom:40px}
+    .section-label{font-size:.8rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#2563eb;display:block;margin-bottom:12px}
+    .section-title{font-size:clamp(2rem,4.5vw,2.8rem);font-weight:800;color:#0f172a;line-height:1.2}
+    .steps-grid{display:grid;grid-template-columns:1fr;gap:24px;list-style:none}
+    @media(min-width:640px){.steps-grid{grid-template-columns:repeat(3,1fr)}}
+    .step-card{background:#fff;border:1.5px solid #f1f5f9;border-radius:20px;padding:28px 24px;box-shadow:0 2px 12px rgba(37,99,235,.06);transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
+    .step-card:hover{transform:translateY(-4px);box-shadow:0 8px 28px rgba(37,99,235,.12);border-color:#bfdbfe}
+    .step-num{width:56px;height:56px;border-radius:16px;background:#2563eb;display:flex;align-items:center;justify-content:center;margin-bottom:20px;box-shadow:0 4px 14px rgba(0,0,0,.20);font-weight:800;font-size:1.5rem;color:#fff}
+    .step-title{font-weight:800;font-size:1.25rem;color:#111827;margin-bottom:8px}
+    .step-desc{font-size:1rem;color:#6b7280;line-height:1.6}
+    .feat-grid{display:grid;grid-template-columns:1fr;gap:24px}
+    @media(min-width:640px){.feat-grid{grid-template-columns:repeat(2,1fr)}}
+    @media(min-width:1024px){.feat-grid{grid-template-columns:repeat(4,1fr)}}
+    .feat-card{background:#fff;border:1.5px solid #f1f5f9;border-radius:20px;padding:28px 24px;box-shadow:0 2px 12px rgba(37,99,235,.06);transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
+    .feat-card:hover{transform:translateY(-4px);box-shadow:0 8px 28px rgba(37,99,235,.12);border-color:#bfdbfe}
+    .feat-icon{width:48px;height:48px;border-radius:12px;background:#eff6ff;color:#2563eb;display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+    .feat-title{font-weight:700;font-size:1.05rem;color:#111827;margin-bottom:8px}
+    .feat-desc{font-size:.9375rem;color:#6b7280;line-height:1.6}
+    .faq-list{display:flex;flex-direction:column;gap:12px}
+    .faq-item{background:#fff;border:1.5px solid #f1f5f9;border-radius:16px;overflow:hidden;transition:border-color .2s,box-shadow .2s}
+    .faq-item.open{border-color:#bfdbfe;box-shadow:0 4px 20px rgba(37,99,235,.09)}
+    .faq-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 24px;background:transparent;border:none;cursor:pointer;text-align:left}
+    .faq-question{font-weight:700;font-size:1.05rem;color:#1a1f36}
+    .faq-icon{width:28px;height:28px;border-radius:8px;background:#eff6ff;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#2563eb;transition:background .2s,transform .25s ease}
+    .faq-item.open .faq-icon{background:#2563eb;color:#fff;transform:rotate(45deg)}
+    .faq-answer{max-height:0;overflow:hidden;transition:max-height .35s cubic-bezier(.22,1,.36,1),padding .25s ease;padding:0 24px;font-size:.9375rem;color:#6b7280;line-height:1.6}
+    .faq-item.open .faq-answer{max-height:400px;padding-bottom:20px}
+    .disclaimer{background:linear-gradient(135deg,#f0f4ff 0%,#e8effe 100%);border-top:3px solid #2563eb;border-bottom:3px solid #2563eb;padding:20px 16px}
+    .disclaimer-inner{max-width:1040px;margin:0 auto}
+    .disclaimer p{font-size:.9375rem;line-height:1.7;font-weight:600;color:#1e3a8a}
+    .footer{background:#0f172a}
+    .footer-top{max-width:1152px;margin:0 auto;padding:56px 16px 40px;display:grid;grid-template-columns:1fr;gap:40px}
+    @media(min-width:640px){.footer-top{grid-template-columns:repeat(3,1fr);padding:56px 24px 40px}}
+    .footer-brand{display:flex;align-items:center;gap:10px;text-decoration:none;margin-bottom:16px}
+    .footer-logo{width:36px;height:36px;border-radius:12px;background:#2563eb;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 4px 14px rgba(0,0,0,.20)}
+    .footer-name{font-weight:800;font-size:1.25rem;letter-spacing:-.025em;color:#fff}
+    .footer-name span{color:#60a5fa}
+    .footer-tagline{font-size:.875rem;line-height:1.6;color:#94a3b8}
+    .footer-col-title{font-weight:700;font-size:.875rem;color:#fff;text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px}
+    .footer-links{list-style:none;display:flex;flex-direction:column;gap:10px}
+    .footer-links a{font-size:.875rem;color:#94a3b8;text-decoration:none;transition:color .15s}
+    .footer-links a:hover{color:#fff}
+    .footer-bottom{border-top:1px solid #1e293b}
+    .footer-bottom-inner{max-width:1152px;margin:0 auto;padding:20px 16px;text-align:center}
+    .footer-copy{font-size:.875rem;color:#94a3b8}
+    .demo-bar{position:fixed;bottom:20px;right:20px;display:flex;flex-direction:column;gap:8px;z-index:9999}
+    .demo-btn{background:#1a1f36;color:#fff;border:none;border-radius:10px;padding:10px 16px;font-size:.8rem;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.3);transition:background .2s;font-family:'Inter',sans-serif}
+    .demo-btn:hover{background:#2563eb}
+  </style>
+</head>
+<body>
+<div class="demo-bar">
+  <button class="demo-btn" onclick="showState('input')">▶ Input State</button>
+  <button class="demo-btn" onclick="showState('loading')">⏳ Loading State</button>
+  <button class="demo-btn" onclick="showState('result')">✅ Result State</button>
+  <button class="demo-btn" onclick="showState('error')">❌ Error State</button>
+</div>
+<header class="nav"><nav class="nav-inner"><a href="#" class="brand"><div class="brand-logo"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 11l5 5 5-5M12 4v12"/></svg></div><span class="brand-name">Pinterest<span>Down</span></span></a><div class="nav-links"><a href="#how-it-works" class="nav-link">How it works</a><a href="#faq" class="nav-link">FAQ</a></div></nav></header>
+<main>
+<section class="hero"><div class="hero-container"><h1>Pinterest Video Downloader</h1><p>Download Pinterest videos without watermark in HD MP4</p>
+<div id="state-input" class="state active"><div class="input-container"><div class="input-wrap"><div class="input-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg></div><input type="url" class="url-input" placeholder="Paste Pinterest link here..." /><button class="paste-btn" onclick="handlePaste()"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>Paste</button><button class="dl-submit" onclick="showState('loading');setTimeout(function(){showState('result')},2000)"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 11l5 5 5-5M12 4v12"/></svg>Download</button></div><p class="terms-note">By using our service you accept our <a href="#">Terms of Service</a>.</p></div></div>
+<div id="state-loading" class="state"><div class="loading-wrap"><div class="dot-loader"><span></span><span></span><span></span></div><p class="loading-text">Fetching media info...</p></div></div>
+</div></section>
+<div class="result-outer"><div id="state-result" class="state"><div class="result-container"><div class="result-card"><div class="result-top"><div class="result-flex"><div class="thumb-box"><img src="https://picsum.photos/seed/pinterest/200/300" alt="thumbnail"/><span class="duration-badge">00:30</span></div><div class="result-details"><span class="author-name">Pinterest</span><h2 class="result-title">Amazing Pinterest Video - Beautiful Scenery HD Compilation</h2><div class="badges"><span class="badge badge-nowm"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>No Watermark</span><span class="badge badge-hd">HD Available</span></div></div></div></div><div class="divider"></div><div class="formats"><p class="formats-label">Choose Format</p><a href="#" class="dl-btn dl-btn-mp4"><div class="dl-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.889L15 14M4 6h8a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2z"/></svg></div><div class="dl-text"><div class="dl-title">Download MP4</div><div class="dl-subtitle">No watermark . Best quality</div></div><svg class="dl-arrow" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 11l5 5 5-5M12 4v12"/></svg></a><a href="#" class="dl-btn dl-btn-hd"><div class="dl-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></div><div class="dl-text"><div class="dl-title">HD Version</div><div class="dl-subtitle">Highest resolution available</div></div><svg class="dl-arrow" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 11l5 5 5-5M12 4v12"/></svg></a><a href="#" class="dl-btn dl-btn-img"><div class="dl-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div><div class="dl-text"><div class="dl-title">Download Cover Image</div><div class="dl-subtitle">Full resolution . Original JPG</div></div><svg class="dl-arrow" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 11l5 5 5-5M12 4v12"/></svg></a></div><p class="expire-note">Links expire shortly. Re-paste the Pinterest URL if a download stops working.</p></div><div class="reset-wrap"><button class="reset-btn" onclick="showState('input')">&#8629; Download another video</button></div></div></div></div>
+<div class="error-outer"><div id="state-error" class="state"><div class="error-container"><div class="error-card"><div class="error-icon"><svg width="36" height="36" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg></div><h3 class="error-title">We could not process this link.</h3><p class="error-desc">Please check the Pinterest link and try again. Make sure the pin is public.</p><button class="btn-primary" onclick="showState('input')"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4"/></svg>Try Again</button></div></div></div></div>
+<section class="section-how" id="how-it-works"><div class="section-container"><div class="section-header"><h2 class="section-title">Download in 3 Easy Steps</h2></div><ol class="steps-grid"><li class="step-card"><div class="step-num">1</div><h3 class="step-title">Copy the Pinterest Link</h3><p class="step-desc">Open Pinterest, tap Share then Copy Link on any public Pin you want to save.</p></li><li class="step-card"><div class="step-num">2</div><h3 class="step-title">Paste and Click Download</h3><p class="step-desc">Paste the Pinterest URL into the downloader above and press Download. All available formats are fetched instantly.</p></li><li class="step-card"><div class="step-num">3</div><h3 class="step-title">Save Without Watermark</h3><p class="step-desc">Choose HD MP4 without watermark or original image. The file saves directly to your device.</p></li></ol></div></section>
+<section class="section-features"><div class="section-container"><div class="section-header"><span class="section-label">Benefits</span><h2 class="section-title">Why Choose Our Downloader?</h2></div><div class="feat-grid"><div class="feat-card"><div class="feat-icon"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div><h3 class="feat-title">Lightning Fast</h3><p class="feat-desc">Direct CDN extraction ensures high-speed conversion and instant saving in seconds.</p></div><div class="feat-card"><div class="feat-icon"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div><h3 class="feat-title">HD Quality</h3><p class="feat-desc">Download videos in highest available 720p HD MP4 and images in original full resolution.</p></div><div class="feat-card"><div class="feat-icon"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><h3 class="feat-title">100% Free and Secure</h3><p class="feat-desc">No sign-up, registration, or software installation needed. Completely safe and free.</p></div><div class="feat-card"><div class="feat-icon"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></div><h3 class="feat-title">Works on All Devices</h3><p class="feat-desc">Fully responsive and compatible with Android, iPhone, Windows, and Mac.</p></div></div></div></section>
+<section class="section-faq" id="faq"><div class="section-container-narrow"><div class="section-header"><span class="section-label">Got Questions?</span><h2 class="section-title">Frequently Asked Questions</h2></div><div class="faq-list"><div class="faq-item"><button class="faq-toggle"><span class="faq-question">How do I download a Pinterest video without watermark?</span><span class="faq-icon"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg></span></button><div class="faq-answer"><p>Copy the link of the Pinterest pin, paste it into the box above, and click Download. You will see direct download options for 720p HD MP4 without watermarks.</p></div></div><div class="faq-item"><button class="faq-toggle"><span class="faq-question">Where are downloaded videos saved on my phone or PC?</span><span class="faq-icon"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg></span></button><div class="faq-answer"><p>On mobile, files save to your Downloads folder or Camera Roll. On desktop, files are saved in your browser default Downloads directory.</p></div></div><div class="faq-item"><button class="faq-toggle"><span class="faq-question">Is this Pinterest downloader free to use?</span><span class="faq-icon"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg></span></button><div class="faq-answer"><p>Yes, it is 100% free with unlimited downloads. No premium tier, no hidden costs.</p></div></div></div></div></section>
+</main>
+<div class="disclaimer"><div class="disclaimer-inner"><p>Pinterest Downloader is an independent tool. We have no relationship with Pinterest Inc. All trademarks belong to their respective owners. Only download content you have the right to download.</p></div></div>
+<footer class="footer"><div class="footer-top"><div><a href="#" class="footer-brand"><div class="footer-logo"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 11l5 5 5-5M12 4v12"/></svg></div><span class="footer-name">Pinterest<span>Down</span></span></a><p class="footer-tagline">The fastest free Pinterest downloader. No watermark, no account, no limits.</p></div><div><h3 class="footer-col-title">Quick Links</h3><ul class="footer-links"><li><a href="#how-it-works">How It Works</a></li><li><a href="#faq">FAQ</a></li></ul></div><div><h3 class="footer-col-title">Download Types</h3><ul class="footer-links"><li><a href="#">Pinterest Video Downloader</a></li><li><a href="#">Pinterest Image Downloader</a></li><li><a href="#">Pinterest GIF Downloader</a></li></ul></div></div><div class="footer-bottom"><div class="footer-bottom-inner"><p class="footer-copy">2025 Pinterest Downloader. All rights reserved.</p></div></div></footer>
+<script>
+function showState(s){['input','loading','result','error'].forEach(function(id){document.getElementById('state-'+id).classList.remove('active')});document.getElementById('state-'+s).classList.add('active')}
+function handlePaste(){if(navigator.clipboard&&navigator.clipboard.readText){navigator.clipboard.readText().then(function(t){document.querySelectorAll('.url-input').forEach(function(el){el.value=t})})}}
+document.querySelectorAll('.faq-toggle').forEach(function(btn){btn.addEventListener('click',function(){var item=btn.closest('.faq-item');var isOpen=item.classList.contains('open');document.querySelectorAll('.faq-item').forEach(function(i){i.classList.remove('open')});if(!isOpen)item.classList.add('open')})});
+</script>
+</body>
+</html>
