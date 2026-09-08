@@ -44,7 +44,8 @@ class PD_Shortcode {
 	public function render( $atts, $content = '' ) {
 		$atts = shortcode_atts(
 			array(
-				'type' => 'video', // Default to video mode.
+				'type'   => 'video', // Default to video mode.
+				'layout' => 'full',  // 'full' (complete landing page) or 'tool' (just hero & download card)
 			),
 			$atts,
 			'pinterest_downloader'
@@ -56,12 +57,17 @@ class PD_Shortcode {
 			$type = 'video';
 		}
 
+		$layout = sanitize_key( $atts['layout'] );
+		if ( ! in_array( $layout, array( 'full', 'tool' ), true ) ) {
+			$layout = 'full';
+		}
+
 		// Signal to the asset manager that this shortcode is present.
 		$this->assets->set_shortcode_found( $type );
 
 		// Capture template output.
 		ob_start();
-		$this->load_template( 'downloader', array( 'type' => $type ) );
+		$this->load_template( 'downloader', array( 'type' => $type, 'layout' => $layout ) );
 		return ob_get_clean();
 	}
 

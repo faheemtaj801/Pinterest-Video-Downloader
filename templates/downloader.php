@@ -20,8 +20,9 @@ if ( $is_gif ) {
 	$hero_subtitle = esc_html__( 'Download Pinterest images in full original resolution', 'pinterest-downloader' );
 }
 ?>
-<div class="pd-app" data-pd-type="<?php echo esc_attr( $type ); ?>">
+<div class="pd-app" data-pd-type="<?php echo esc_attr( $type ); ?>" data-pd-layout="<?php echo esc_attr( $layout ); ?>">
 
+	<?php if ( 'tool' !== $layout ) : ?>
 	<!-- ── Sticky Nav ─────────────────────────────────────────────── -->
 	<header class="pd-nav" role="banner">
 		<nav class="pd-nav__inner" role="navigation" aria-label="<?php esc_attr_e( 'Main navigation', 'pinterest-downloader' ); ?>">
@@ -49,6 +50,7 @@ if ( $is_gif ) {
 
 		</nav>
 	</header>
+	<?php endif; ?>
 
 	<main>
 
@@ -99,6 +101,9 @@ if ( $is_gif ) {
 			</div>
 		</div>
 
+		<?php if ( 'tool' === $layout ) : ?>
+	</main>
+		<?php else : ?>
 		<!-- ── Editorial Meta & Intro Callout ──────────────────────── -->
 		<section class="pd-section-content" style="padding-top: 32px; padding-bottom: 24px;">
 			<div class="pd-section__container pd-section__container--narrow">
@@ -598,5 +603,6 @@ if ( $is_gif ) {
 			}
 		</script>
 	</footer>
+	<?php endif; ?>
 
 </div><!-- .pd-app -->
