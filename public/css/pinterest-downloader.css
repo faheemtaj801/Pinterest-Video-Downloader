@@ -1,103 +1,136 @@
 /**
- * Pinterest Downloader — Public Stylesheet (TikSav Theme & Design)
+ * Pinterest Downloader — Public Stylesheet
+ * Design: Exact copy of TikSav.app (https://tiksav.app)
+ * Colors, fonts, layout, components — all matched from live source.
  *
- * Inspired by TikSav.app:
- * Royal Blue Gradient Hero (#1a3fd4 -> #2152e8 -> #1535b8)
- * Clean Inter typography, floating pill input bar, TikSav format cards,
- * 3-step feature cards, and accessible FAQ accordion.
- *
- * All selectors scoped under .pd-app or .pd-* to prevent theme conflicts.
+ * @package Pinterest_Downloader
  */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-/* ==========================================================================
-   1. Design Tokens (TikSav Theme)
-   ========================================================================== */
-
-:root {
-  --pd-hero-bg: linear-gradient(160deg, #1a3fd4 0%, #2152e8 35%, #1e45d6 65%, #1535b8 100%);
-  --pd-primary: #2563eb;
-  --pd-primary-hover: #1d4ed8;
-  --pd-primary-active: #1a3fd4;
-  --pd-primary-light: #eff6ff;
-  --pd-primary-border: #bfdbfe;
-
-  --pd-page-bg: #FAFBFF;
-  --pd-card-bg: #ffffff;
-  --pd-snow: #f8fafc;
-  --pd-border: #f1f5f9;
-  --pd-border-dark: #e2e8f0;
-
-  --pd-text-dark: #0f172a;
-  --pd-text-heading: #1a1f36;
-  --pd-text-body: #475569;
-  --pd-text-muted: #64748b;
-  --pd-text-light: #94a3b8;
-
-  --pd-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --pd-radius-pill: 9999px;
-  --pd-radius-card: 24px;
-  --pd-radius-btn: 14px;
-  --pd-radius-input: 16px;
-
-  --pd-shadow-input: 0 8px 40px rgba(0, 0, 0, 0.20);
-  --pd-shadow-card: 0 4px 24px rgba(37, 99, 235, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
-  --pd-shadow-btn: 0 4px 14px rgba(0, 0, 0, 0.18);
-  --pd-shadow-btn-hover: 0 6px 20px rgba(0, 0, 0, 0.26);
-  --pd-shadow-mp4: 0 4px 16px rgba(37, 99, 235, 0.30);
-  --pd-shadow-mp4-hover: 0 6px 22px rgba(37, 99, 235, 0.45);
-}
-
-/* ==========================================================================
-   2. Reset & Scoped Container
-   ========================================================================== */
-
-.pd-app,
-.pd-app * {
+/* ── Reset & base ─────────────────────────────────────────────────── */
+.pd-app *, .pd-app *::before, .pd-app *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
 .pd-app {
-  font-family: var(--pd-font);
-  font-size: 16px;
-  line-height: 1.5;
-  color: var(--pd-text-body);
-  background-color: var(--pd-page-bg);
+  font-family: 'Inter', sans-serif;
+  background-color: #FAFBFF;
+  color: #1a1f36;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   width: 100%;
   overflow-x: hidden;
 }
 
-.pd-visually-hidden {
+/* ── Visually hidden (accessible) ─────────────────────────────────── */
+.pd-sr-only {
   position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
   overflow: hidden;
-  clip: rect(0, 0, 0, 0);
+  clip: rect(0,0,0,0);
   white-space: nowrap;
   border: 0;
 }
 
-/* ==========================================================================
-   3. TikSav Hero Section
-   ========================================================================== */
+/* ── Sticky Nav — white glass ──────────────────────────────────────── */
+.pd-nav {
+  background: rgba(250,251,255,0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(219,234,254,0.6);
+  box-shadow: 0 1px 12px rgba(37,99,235,0.07);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  width: 100%;
+}
 
+.pd-nav__inner {
+  max-width: 1152px;
+  margin: 0 auto;
+  padding: 0 16px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.pd-nav__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.pd-nav__logo-box {
+  width: 32px; height: 32px;
+  border-radius: 12px;
+  background: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.20);
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.pd-nav__brand-name {
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  font-size: 1.25rem;
+  letter-spacing: -0.025em;
+  color: #111827;
+}
+
+.pd-nav__brand-name span {
+  color: #2563eb;
+}
+
+.pd-nav__links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pd-nav__link {
+  display: none;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-decoration: none;
+  transition: color 0.2s, background 0.2s;
+}
+
+@media (min-width: 640px) {
+  .pd-nav__link {
+    display: inline-flex;
+  }
+}
+
+.pd-nav__link:hover {
+  color: #2563eb;
+  background: #eff6ff;
+}
+
+/* ── Hero — full royal-blue gradient ──────────────────────────────── */
 .pd-hero {
-  background: var(--pd-hero-bg);
-  padding: 48px 16px 64px 16px;
+  background: linear-gradient(160deg, #1a3fd4 0%, #2152e8 35%, #1e45d6 65%, #1535b8 100%);
+  padding: 48px 16px 64px;
   text-align: center;
-  position: relative;
 }
 
 @media (min-width: 640px) {
   .pd-hero {
-    padding: 64px 20px 80px 20px;
+    padding: 64px 16px 80px;
   }
 }
 
@@ -106,85 +139,68 @@
   margin: 0 auto;
 }
 
-.pd-hero__badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(255, 255, 255, 0.16);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  color: #ffffff;
-  padding: 6px 14px;
-  border-radius: var(--pd-radius-pill);
-  font-size: 0.8125rem;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  margin-bottom: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-}
-
 .pd-hero__title {
-  font-family: var(--pd-font);
-  font-size: clamp(1.85rem, 5vw, 3.25rem);
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(1.8rem, 5vw, 3.5rem);
   font-weight: 800;
   color: #ffffff;
   line-height: 1.15;
   letter-spacing: -0.025em;
-  margin-bottom: 14px;
+  margin-bottom: 20px;
 }
 
 .pd-hero__subtitle {
-  font-family: var(--pd-font);
-  font-size: clamp(1rem, 2.5vw, 1.2rem);
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(1rem, 2.5vw, 1.25rem);
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.85);
-  max-width: 580px;
-  margin: 0 auto 36px auto;
+  color: rgba(255,255,255,0.80);
+  max-width: 576px;
+  margin: 0 auto 40px;
   line-height: 1.6;
 }
 
-/* State system */
-.pd-hero__states {
-  width: 100%;
-}
-
+/* ── State system ──────────────────────────────────────────────────── */
 .pd-state {
   display: none;
 }
-
 .pd-state.is-active {
   display: block;
 }
 
-/* ==========================================================================
-   4. Input Wrap (TikSav Floating Pill Search Bar)
-   ========================================================================== */
-
+/* ── Input bar (white pill on blue) ───────────────────────────────── */
 .pd-input-container {
   width: 100%;
   max-width: 672px;
   margin: 0 auto;
 }
 
-/* Desktop wrap */
+/* Desktop */
 .pd-input-wrap--desktop {
-  display: flex;
+  display: none;
   align-items: center;
-  background: #ffffff;
-  border-radius: var(--pd-radius-input);
-  box-shadow: var(--pd-shadow-input);
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.20);
   overflow: hidden;
-  transition: box-shadow 0.2s ease;
-  padding: 5px;
+  transition: box-shadow 0.2s;
 }
 
 .pd-input-wrap--desktop:focus-within {
-  box-shadow: 0 10px 48px rgba(0, 0, 0, 0.28);
+  box-shadow: 0 8px 48px rgba(0,0,0,0.28);
+}
+
+@media (min-width: 640px) {
+  .pd-input-wrap--desktop {
+    display: flex;
+  }
+  .pd-input-wrap--mobile {
+    display: none !important;
+  }
 }
 
 .pd-input-icon {
-  padding-left: 16px;
-  padding-right: 8px;
+  padding-left: 20px;
+  padding-right: 12px;
   color: #9ca3af;
   display: flex;
   align-items: center;
@@ -196,16 +212,15 @@
   border: none;
   outline: none;
   background: transparent;
-  padding: 14px 12px;
-  font-family: var(--pd-font);
+  padding: 16px 12px;
+  font-family: 'Inter', sans-serif;
   font-size: 1rem;
-  color: #1e293b;
+  color: #1f2937;
   min-width: 0;
 }
 
 .pd-input-field::placeholder {
   color: #9ca3af;
-  font-weight: 400;
 }
 
 /* Paste button */
@@ -216,18 +231,19 @@
   background: transparent;
   border: none;
   border-left: 1px solid #f1f5f9;
-  color: #64748b;
-  font-family: var(--pd-font);
+  color: #6b7280;
+  font-family: 'Inter', sans-serif;
   font-size: 0.875rem;
   font-weight: 700;
-  padding: 10px 16px;
+  padding: 12px 16px;
   cursor: pointer;
   flex-shrink: 0;
-  transition: color 0.15s ease;
+  transition: color 0.15s;
+  white-space: nowrap;
 }
 
 .pd-paste-btn:hover {
-  color: var(--pd-primary);
+  color: #2563eb;
 }
 
 /* Primary download button */
@@ -236,26 +252,28 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: var(--pd-primary);
-  color: #ffffff;
+  background: #2563eb;
+  color: #fff;
   border: none;
   border-radius: 12px;
-  padding: 14px 28px;
-  font-family: var(--pd-font);
+  padding: 15px 30px;
+  margin: 8px;
+  font-family: 'Inter', sans-serif;
   font-size: 1rem;
   font-weight: 700;
+  letter-spacing: 0.01em;
   cursor: pointer;
-  box-shadow: var(--pd-shadow-btn);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.20);
   flex-shrink: 0;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
-  text-decoration: none;
   white-space: nowrap;
+  text-decoration: none;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
 }
 
 .pd-btn-primary:hover:not(:disabled) {
-  background: var(--pd-primary-hover);
-  box-shadow: var(--pd-shadow-btn-hover);
   transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.28);
+  background: #1d4ed8;
 }
 
 .pd-btn-primary:active:not(:disabled) {
@@ -267,52 +285,44 @@
   cursor: not-allowed;
 }
 
-/* Mobile wrap */
+/* Mobile layout */
 .pd-input-wrap--mobile {
-  display: none;
+  display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.pd-input-wrap--mobile .pd-input-wrap {
+.pd-input-wrap--mobile .pd-input-row {
   display: flex;
   align-items: center;
-  background: #ffffff;
-  border-radius: var(--pd-radius-input);
-  box-shadow: var(--pd-shadow-input);
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.20);
   overflow: hidden;
   padding: 4px 8px;
 }
 
-.pd-btn-primary--mobile {
+.pd-btn-primary--full {
   width: 100%;
+  justify-content: center;
   padding: 16px 20px;
-  border-radius: var(--pd-radius-input);
-}
-
-@media (max-width: 640px) {
-  .pd-input-wrap--desktop {
-    display: none;
-  }
-  .pd-input-wrap--mobile {
-    display: flex;
-  }
+  border-radius: 16px;
+  margin: 0;
 }
 
 /* Terms note */
 .pd-terms-note {
-  margin-top: 14px;
-  font-size: 0.8125rem;
-  color: rgba(255, 255, 255, 0.65);
-  font-weight: 400;
+  margin-top: 16px;
+  font-size: 0.875rem;
+  color: rgba(255,255,255,0.50);
   text-align: center;
 }
 
 .pd-terms-note a {
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255,255,255,0.70);
   text-decoration: underline;
   text-underline-offset: 2px;
-  transition: color 0.15s ease;
+  transition: color 0.15s;
 }
 
 .pd-terms-note a:hover {
@@ -328,25 +338,22 @@
   margin-top: 16px;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #fee2e2;
-  background: rgba(239, 68, 68, 0.25);
-  backdrop-filter: blur(6px);
-  padding: 10px 16px;
-  border-radius: 12px;
-  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fecaca;
+  animation: pdFadeIn 0.2s ease;
 }
 
-/* =========================================================
-   5. TikSav Loading State (Bouncing White Dots)
-   ========================================================== */
+@keyframes pdFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
 
+/* ── Loading dots (white on blue bg) ──────────────────────────────── */
 .pd-loading-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 14px;
-  padding: 28px 16px;
+  gap: 12px;
+  padding: 40px 16px;
 }
 
 .pd-dot-loader {
@@ -357,69 +364,54 @@
 
 .pd-dot-loader span {
   display: inline-block;
-  width: 9px;
-  height: 9px;
+  width: 9px; height: 9px;
   border-radius: 50%;
   background: #ffffff;
   animation: pdPulseDot 1.4s ease-in-out infinite;
 }
 
-.pd-dot-loader span:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-.pd-dot-loader span:nth-child(3) {
-  animation-delay: 0.4s;
-}
+.pd-dot-loader span:nth-child(2) { animation-delay: 0.2s; }
+.pd-dot-loader span:nth-child(3) { animation-delay: 0.4s; }
 
 @keyframes pdPulseDot {
-  0%, 80%, 100% {
-    transform: scale(0.65);
-    opacity: 0.4;
-  }
-  40% {
-    transform: scale(1.15);
-    opacity: 1;
-  }
+  0%, 80%, 100% { transform: scale(0.65); opacity: 0.4; }
+  40%           { transform: scale(1.15); opacity: 1;   }
 }
 
 .pd-loading-text {
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 0.9375rem;
-  font-weight: 500;
+  color: rgba(255,255,255,0.60);
+  font-size: 0.875rem;
+  font-family: 'Inter', sans-serif;
 }
 
-/* =========================================================
-   6. TikSav Result Card
-   ========================================================== */
+/* ── Result card (exact TikSav style) ─────────────────────────────── */
+.pd-result-outer {
+  padding: 0 16px 64px;
+}
 
 .pd-result-container {
-  width: 100%;
   max-width: 672px;
   margin: 0 auto;
-  animation: pdFadeUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+#pd-result-card {
+  animation: pdFadeUp 0.5s cubic-bezier(0.22,1,0.36,1) forwards;
 }
 
 @keyframes pdFadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0);    }
 }
 
 .pd-result-card {
   background: #ffffff;
-  border-radius: var(--pd-radius-card);
-  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.18);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 24px;
+  box-shadow: 0 4px 24px rgba(37,99,235,0.08), 0 1px 4px rgba(0,0,0,0.04);
+  border: 1px solid #f1f5f9;
   overflow: hidden;
-  text-align: left;
 }
 
+/* Top section */
 .pd-result-top {
   padding: 20px;
 }
@@ -430,82 +422,83 @@
   }
 }
 
-.pd-result-header-flex {
+.pd-result-flex {
   display: flex;
   gap: 16px;
   align-items: flex-start;
 }
 
+/* Thumbnail */
 .pd-result-thumb-box {
   position: relative;
   flex-shrink: 0;
-  width: 84px;
-  height: 116px;
+  width: 80px; height: 112px;
   border-radius: 16px;
   overflow: hidden;
   background: #f1f5f9;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.10);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.10);
 }
 
 @media (min-width: 640px) {
   .pd-result-thumb-box {
-    width: 100px;
-    height: 136px;
+    width: 96px; height: 128px;
   }
 }
 
 .pd-result-cover {
-  width: 100%;
-  height: 100%;
+  width: 100%; height: 100%;
   object-fit: cover;
   display: block;
 }
 
 .pd-result-duration {
   position: absolute;
-  bottom: 6px;
-  left: 6px;
-  background: rgba(0, 0, 0, 0.7);
-  color: #ffffff;
+  bottom: 6px; left: 6px;
+  background: rgba(0,0,0,0.65);
+  color: #fff;
   font-family: monospace;
   font-size: 0.75rem;
   padding: 2px 6px;
   border-radius: 6px;
 }
 
+/* Details */
 .pd-result-details {
   flex: 1;
   min-width: 0;
+  padding-top: 4px;
 }
 
 .pd-result-author-row {
-  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
 }
 
-.pd-result-brand {
+.pd-result-author-name {
   font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--pd-primary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-weight: 600;
+  color: #2563eb;
+  font-family: 'Inter', sans-serif;
 }
 
 .pd-result-title {
-  font-family: var(--pd-font);
-  font-size: 1rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.875rem;
   font-weight: 700;
-  color: var(--pd-text-heading);
+  color: #111827;
   line-height: 1.4;
-  margin-bottom: 12px;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  margin-bottom: 12px;
 }
 
 @media (min-width: 640px) {
   .pd-result-title {
-    font-size: 1.0625rem;
+    font-size: 1rem;
   }
 }
 
@@ -522,10 +515,10 @@
   font-size: 0.75rem;
   font-weight: 600;
   padding: 4px 10px;
-  border-radius: var(--pd-radius-pill);
+  border-radius: 9999px;
 }
 
-.pd-badge--watermark {
+.pd-badge--nowm {
   background: #eff6ff;
   color: #1d4ed8;
   border: 1px solid #bfdbfe;
@@ -537,13 +530,20 @@
   border: 1px solid #bbf7d0;
 }
 
+/* Divider */
 .pd-result-divider {
   height: 1px;
   background: #f1f5f9;
   margin: 0 20px;
 }
 
-/* Format buttons */
+@media (min-width: 640px) {
+  .pd-result-divider {
+    margin: 0 24px;
+  }
+}
+
+/* Format buttons section */
 .pd-result-formats {
   padding: 20px;
   display: flex;
@@ -559,72 +559,75 @@
 
 .pd-formats-label {
   font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--pd-text-light);
+  font-weight: 600;
+  color: #9ca3af;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 
+/* Download buttons — exact TikSav dl-btn */
 .pd-dl-btn {
   display: flex;
   align-items: center;
   gap: 14px;
   width: 100%;
-  padding: 16px 20px;
-  border-radius: var(--pd-radius-btn);
+  padding: 18px 22px;
+  border-radius: 14px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
   text-decoration: none;
-  cursor: pointer;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
   border: 1.5px solid transparent;
+  cursor: pointer;
+  transition: transform 0.17s ease, box-shadow 0.17s ease, background 0.17s ease;
 }
 
 .pd-dl-btn:hover {
   transform: translateY(-2px);
 }
 
-/* 1. MP4 button (Royal Blue Gradient) */
+/* 1. MP4 — royal blue gradient */
 .pd-dl-btn--mp4 {
   background: linear-gradient(135deg, #2563eb, #1d4ed8);
-  color: #ffffff;
-  box-shadow: var(--pd-shadow-mp4);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(37,99,235,0.30);
 }
 
 .pd-dl-btn--mp4:hover {
-  box-shadow: var(--pd-shadow-mp4-hover);
+  box-shadow: 0 6px 22px rgba(37,99,235,0.45);
 }
 
-/* 2. HD button (White with Royal border) */
+/* 2. HD — white with royal border */
 .pd-dl-btn--hd {
-  background: #ffffff;
+  background: #fff;
   color: #1d4ed8;
   border-color: #bfdbfe;
-  box-shadow: 0 2px 10px rgba(37, 99, 235, 0.08);
+  box-shadow: 0 2px 10px rgba(37,99,235,0.08);
 }
 
 .pd-dl-btn--hd:hover {
   background: #eff6ff;
   border-color: #93c5fd;
-  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.14);
+  box-shadow: 0 4px 16px rgba(37,99,235,0.14);
 }
 
-/* 3. Image button (Sky Blue Theme) */
+/* 3. Image/Cover — sky blue */
 .pd-dl-btn--img {
-  background: #ffffff;
+  background: #fff;
   color: #0369a1;
   border-color: #bae6fd;
-  box-shadow: 0 2px 10px rgba(3, 105, 161, 0.07);
+  box-shadow: 0 2px 10px rgba(3,105,161,0.07);
 }
 
 .pd-dl-btn--img:hover {
   background: #f0f9ff;
   border-color: #7dd3fc;
-  box-shadow: 0 4px 16px rgba(3, 105, 161, 0.13);
+  box-shadow: 0 4px 16px rgba(3,105,161,0.13);
 }
 
-.pd-dl-icon-wrap {
-  width: 40px;
-  height: 40px;
+.pd-dl-icon {
+  width: 36px; height: 36px;
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -632,27 +635,27 @@
   flex-shrink: 0;
 }
 
-.pd-dl-btn--mp4 .pd-dl-icon-wrap {
-  background: rgba(255, 255, 255, 0.2);
-  color: #ffffff;
+.pd-dl-btn--mp4 .pd-dl-icon {
+  background: rgba(255,255,255,0.20);
+  color: #fff;
 }
 
-.pd-dl-btn--hd .pd-dl-icon-wrap {
+.pd-dl-btn--hd .pd-dl-icon {
   background: #eff6ff;
   color: #2563eb;
 }
 
-.pd-dl-btn--img .pd-dl-icon-wrap {
+.pd-dl-btn--img .pd-dl-icon {
   background: #f0f9ff;
   color: #0284c7;
 }
 
-.pd-dl-text-wrap {
+.pd-dl-text {
   flex: 1;
 }
 
 .pd-dl-title {
-  font-family: var(--pd-font);
+  font-family: 'Inter', sans-serif;
   font-size: 0.9375rem;
   font-weight: 700;
   line-height: 1.2;
@@ -661,92 +664,90 @@
 .pd-dl-subtitle {
   font-size: 0.75rem;
   font-weight: 400;
-  opacity: 0.85;
-  margin-top: 3px;
+  opacity: 0.80;
+  margin-top: 2px;
 }
 
 .pd-dl-arrow {
-  opacity: 0.8;
+  opacity: 0.80;
   flex-shrink: 0;
 }
 
-.pd-result-footer-note {
+.pd-result-expire-note {
   text-align: center;
   font-size: 0.75rem;
-  color: #94a3b8;
-  padding: 0 20px 16px 20px;
+  color: #d1d5db;
+  padding: 0 20px 16px;
+  font-family: 'Inter', sans-serif;
 }
 
 /* Reset button */
 .pd-reset-wrap {
-  margin-top: 18px;
+  margin-top: 16px;
   text-align: center;
 }
 
 .pd-reset-btn {
   background: transparent;
   border: none;
-  color: #ffffff;
-  font-family: var(--pd-font);
-  font-size: 0.9375rem;
+  color: #2563eb;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
-  text-decoration: none;
-  transition: opacity 0.15s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+  transition: color 0.15s, text-decoration 0.15s;
 }
 
 .pd-reset-btn:hover {
+  color: #1e40af;
   text-decoration: underline;
-  opacity: 0.9;
+  text-underline-offset: 2px;
 }
 
-/* =========================================================
-   7. TikSav Error Alert Card
-   ========================================================== */
+/* ── Error card ───────────────────────────────────────────────────── */
+.pd-error-outer {
+  padding: 0 16px 64px;
+}
 
 .pd-error-container {
-  width: 100%;
   max-width: 580px;
   margin: 0 auto;
   animation: pdFadeUp 0.3s ease;
 }
 
 .pd-error-card {
-  background: #ffffff;
-  border-radius: var(--pd-radius-card);
+  background: #fff;
+  border-radius: 24px;
   padding: 32px 24px;
   text-align: center;
-  box-shadow: var(--pd-shadow-card);
+  box-shadow: 0 4px 24px rgba(37,99,235,0.08), 0 1px 4px rgba(0,0,0,0.04);
+  border: 1px solid #f1f5f9;
 }
 
 .pd-error-icon-wrap {
-  width: 64px;
-  height: 64px;
+  width: 64px; height: 64px;
   border-radius: 50%;
   background: #fee2e2;
   color: #dc2626;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 16px auto;
+  margin: 0 auto 16px;
 }
 
 .pd-error-title {
-  font-family: var(--pd-font);
+  font-family: 'Inter', sans-serif;
   font-size: 1.25rem;
   font-weight: 800;
-  color: var(--pd-text-heading);
+  color: #0f172a;
   margin-bottom: 8px;
 }
 
 .pd-error-desc {
   font-size: 0.9375rem;
-  color: var(--pd-text-body);
+  color: #475569;
   margin-bottom: 24px;
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
 .pd-error-actions {
@@ -754,26 +755,20 @@
   justify-content: center;
 }
 
-/* =========================================================
-   8. General Content Sections (Steps, Features, FAQ)
-   ========================================================== */
-
-.pd-section {
-  padding: 56px 16px;
-}
-
-@media (min-width: 768px) {
-  .pd-section {
-    padding: 72px 20px;
-  }
-}
-
-.pd-section--white {
+/* ── How It Works Section ─────────────────────────────────────────── */
+.pd-section-how {
+  padding: 40px 16px;
   background: #ffffff;
 }
 
-.pd-section--snow {
-  background: var(--pd-page-bg);
+.pd-section-faq {
+  padding: 40px 16px;
+  background: #ffffff;
+}
+
+.pd-section-features {
+  padding: 40px 16px;
+  background: #FAFBFF;
 }
 
 .pd-section__container {
@@ -782,101 +777,98 @@
 }
 
 .pd-section__container--narrow {
-  max-width: 768px;
+  max-width: 672px;
 }
 
+/* Section header */
 .pd-section__header {
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: 32px;
 }
 
-.pd-section__label {
-  font-size: 0.8125rem;
+.pd-section-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--pd-primary);
+  color: #2563eb;
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
-.pd-section__title {
-  font-family: var(--pd-font);
-  font-size: clamp(1.75rem, 4vw, 2.5rem);
+.pd-section-title {
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(2rem, 4.5vw, 2.8rem);
   font-weight: 800;
-  color: var(--pd-text-dark);
+  color: #0f172a;
   line-height: 1.2;
 }
 
-/* =========================================================
-   9. TikSav 3 Steps Grid
-   ========================================================== */
-
+/* Step cards — exactly like TikSav feat-card */
 .pd-steps-grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: 24px;
+  list-style: none;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 640px) {
   .pd-steps-grid {
     grid-template-columns: repeat(3, 1fr);
   }
 }
 
 .pd-step-card {
-  background: #ffffff;
-  border: 1.5px solid var(--pd-border);
+  background: #fff;
+  border: 1.5px solid #f1f5f9;
   border-radius: 20px;
-  padding: 32px 24px;
-  box-shadow: 0 2px 12px rgba(37, 99, 235, 0.05);
+  padding: 28px 24px;
+  box-shadow: 0 2px 12px rgba(37,99,235,0.06);
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .pd-step-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 28px rgba(37, 99, 235, 0.10);
-  border-color: var(--pd-primary-border);
+  box-shadow: 0 8px 28px rgba(37,99,235,0.12);
+  border-color: #bfdbfe;
 }
 
 .pd-step-num {
-  width: 54px;
-  height: 54px;
+  width: 56px; height: 56px;
   border-radius: 16px;
-  background: var(--pd-primary);
-  color: #ffffff;
-  font-family: var(--pd-font);
-  font-size: 1.5rem;
-  font-weight: 800;
+  background: #2563eb;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 20px;
-  box-shadow: var(--pd-shadow-btn);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.20);
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  font-size: 1.5rem;
+  color: #fff;
 }
 
 .pd-step-title {
-  font-family: var(--pd-font);
-  font-size: 1.15rem;
+  font-family: 'Inter', sans-serif;
   font-weight: 800;
-  color: var(--pd-text-dark);
+  font-size: 1.25rem;
+  color: #111827;
   margin-bottom: 8px;
 }
 
 .pd-step-desc {
-  font-size: 0.9375rem;
-  color: var(--pd-text-body);
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  color: #6b7280;
   line-height: 1.6;
 }
 
-/* =========================================================
-   10. Feature Cards Grid
-   ========================================================== */
-
+/* Feature cards */
 .pd-feat-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 20px;
+  gap: 24px;
 }
 
 @media (min-width: 640px) {
@@ -892,67 +884,64 @@
 }
 
 .pd-feat-card {
-  background: #ffffff;
-  border: 1.5px solid var(--pd-border);
+  background: #fff;
+  border: 1.5px solid #f1f5f9;
   border-radius: 20px;
-  padding: 28px 20px;
-  box-shadow: 0 2px 12px rgba(37, 99, 235, 0.05);
+  padding: 28px 24px;
+  box-shadow: 0 2px 12px rgba(37,99,235,0.06);
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .pd-feat-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 28px rgba(37, 99, 235, 0.10);
-  border-color: var(--pd-primary-border);
+  box-shadow: 0 8px 28px rgba(37,99,235,0.12);
+  border-color: #bfdbfe;
 }
 
 .pd-feat-icon {
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
-  background: var(--pd-primary-light);
-  color: var(--pd-primary);
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  background: #eff6ff;
+  color: #2563eb;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
 }
 
 .pd-feat-title {
-  font-family: var(--pd-font);
-  font-size: 1.0625rem;
-  font-weight: 800;
-  color: var(--pd-text-dark);
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: #111827;
   margin-bottom: 8px;
 }
 
 .pd-feat-desc {
-  font-size: 0.875rem;
-  color: var(--pd-text-body);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9375rem;
+  color: #6b7280;
   line-height: 1.6;
 }
 
-/* =========================================================
-   11. TikSav FAQ Accordion
-   ========================================================== */
-
+/* ── FAQ Accordion — exact TikSav style ───────────────────────────── */
 .pd-faq-list {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 .pd-faq-item {
-  background: #ffffff;
-  border: 1.5px solid var(--pd-border);
+  background: #fff;
+  border: 1.5px solid #f1f5f9;
   border-radius: 16px;
   overflow: hidden;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .pd-faq-item.is-open {
-  border-color: var(--pd-primary-border);
-  box-shadow: 0 4px 20px rgba(37, 99, 235, 0.08);
+  border-color: #bfdbfe;
+  box-shadow: 0 4px 20px rgba(37,99,235,0.09);
 }
 
 .pd-faq-toggle {
@@ -969,38 +958,174 @@
 }
 
 .pd-faq-question {
-  font-family: var(--pd-font);
+  font-family: 'Inter', sans-serif;
   font-weight: 700;
   font-size: 1.05rem;
-  color: var(--pd-text-heading);
+  color: #1a1f36;
 }
 
 .pd-faq-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  background: var(--pd-primary-light);
-  color: var(--pd-primary);
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  background: #eff6ff;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s ease, transform 0.25s ease, color 0.2s ease;
+  color: #2563eb;
+  transition: background 0.2s, transform 0.25s ease;
 }
 
 .pd-faq-item.is-open .pd-faq-icon {
-  background: var(--pd-primary);
-  color: #ffffff;
+  background: #2563eb;
+  color: #fff;
   transform: rotate(45deg);
 }
 
 .pd-faq-answer {
-  padding: 0 24px 20px 24px;
-  color: var(--pd-text-body);
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s cubic-bezier(0.22,1,0.36,1), padding 0.25s ease;
+  padding: 0 24px;
+  font-family: 'Inter', sans-serif;
   font-size: 0.9375rem;
-  line-height: 1.7;
+  color: #6b7280;
+  line-height: 1.6;
 }
 
-.pd-faq-answer[hidden] {
-  display: none;
+.pd-faq-item.is-open .pd-faq-answer {
+  max-height: 400px;
+  padding-bottom: 20px;
 }
+
+/* ── Disclaimer Banner ────────────────────────────────────────────── */
+.pd-disclaimer {
+  background: linear-gradient(135deg, #f0f4ff 0%, #e8effe 100%);
+  border-top: 3px solid #2563eb;
+  border-bottom: 3px solid #2563eb;
+  padding: 20px 16px;
+}
+
+.pd-disclaimer__inner {
+  max-width: 1040px;
+  margin: 0 auto;
+}
+
+.pd-disclaimer p {
+  font-size: 0.9375rem;
+  font-family: 'Inter', sans-serif;
+  line-height: 1.7;
+  font-weight: 600;
+  color: #1e3a8a;
+}
+
+/* ── Footer — dark bg (#0f172a) ───────────────────────────────────── */
+.pd-footer {
+  background: #0f172a;
+}
+
+.pd-footer__top {
+  max-width: 1152px;
+  margin: 0 auto;
+  padding: 56px 16px 40px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 40px;
+}
+
+@media (min-width: 640px) {
+  .pd-footer__top {
+    grid-template-columns: repeat(3, 1fr);
+    padding: 56px 24px 40px;
+  }
+}
+
+.pd-footer__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  margin-bottom: 16px;
+}
+
+.pd-footer__logo-box {
+  width: 36px; height: 36px;
+  border-radius: 12px;
+  background: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.20);
+}
+
+.pd-footer__brand-name {
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  font-size: 1.25rem;
+  letter-spacing: -0.025em;
+  color: #fff;
+}
+
+.pd-footer__brand-name span {
+  color: #60a5fa;
+}
+
+.pd-footer__tagline {
+  font-size: 0.875rem;
+  font-family: 'Inter', sans-serif;
+  line-height: 1.6;
+  color: #94a3b8;
+}
+
+.pd-footer__col-title {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 16px;
+}
+
+.pd-footer__links {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pd-footer__links a {
+  font-size: 0.875rem;
+  font-family: 'Inter', sans-serif;
+  color: #94a3b8;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.pd-footer__links a:hover {
+  color: #fff;
+}
+
+.pd-footer__bottom {
+  border-top: 1px solid #1e293b;
+}
+
+.pd-footer__bottom-inner {
+  max-width: 1152px;
+  margin: 0 auto;
+  padding: 20px 16px;
+  text-align: center;
+}
+
+.pd-footer__copy {
+  font-size: 0.875rem;
+  font-family: 'Inter', sans-serif;
+  color: #94a3b8;
+}
+
+/* ── Scrollbar ────────────────────────────────────────────────────── */
+.pd-app ::-webkit-scrollbar { width: 5px; }
+.pd-app ::-webkit-scrollbar-track { background: #f8fafc; }
+.pd-app ::-webkit-scrollbar-thumb { background: #bfdbfe; border-radius: 3px; }

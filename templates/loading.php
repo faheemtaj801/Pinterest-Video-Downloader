@@ -1,28 +1,23 @@
 <?php
 /**
- * Loading state template (TikSav Design).
+ * Loading state template — exact TikSav.app design (white dots on blue hero).
  *
  * @package Pinterest_Downloader
  */
-
-// Prevent direct file access.
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+if ( ! defined( 'ABSPATH' ) ) { exit; }
 ?>
-<div class="pd-loading-container" role="status" aria-live="polite" aria-label="<?php esc_attr_e( 'Loading media info', 'pinterest-downloader' ); ?>">
+<div class="pd-loading-container" role="status" aria-live="polite"
+     aria-label="<?php esc_attr_e( 'Loading media info', 'pinterest-downloader' ); ?>">
 
-	<!-- TikSav Pulsing Dot Loader -->
+	<!-- White pulsing dots (TikSav style) -->
 	<div class="pd-dot-loader" aria-hidden="true">
-		<span></span>
-		<span></span>
-		<span></span>
+		<span style="background:#fff;"></span>
+		<span style="background:#fff;"></span>
+		<span style="background:#fff;"></span>
 	</div>
 
-	<!-- Status message -->
-	<p class="pd-loading-text" id="pd-loading-message">
+	<p class="pd-loading-text">
 		<?php esc_html_e( 'Fetching media info…', 'pinterest-downloader' ); ?>
 	</p>
 
 </div>
-

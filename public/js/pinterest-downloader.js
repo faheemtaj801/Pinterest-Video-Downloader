@@ -178,6 +178,14 @@
     // Side effects per state
     if ( state === 'idle' ) {
       clearInput();
+      // Scroll back to top of plugin
+      wrapper && wrapper.scrollIntoView( { behavior: 'smooth', block: 'start' } );
+    }
+    // When result shows, scroll to result card
+    if ( state === 'result' && stateResult ) {
+      setTimeout( function() {
+        stateResult.scrollIntoView( { behavior: 'smooth', block: 'start' } );
+      }, 100 );
     }
   }
 
@@ -506,31 +514,27 @@
 
   // ─── FAQ Accordion (TikSav Style) ─────────────────────────────────────────
 
-  const faqItems = wrapper.querySelectorAll( '.pd-faq-item' );
+  // ── FAQ Accordion (exact TikSav: max-height animation, is-open class) ──
+  const faqItems = document.querySelectorAll( '.pd-faq-item' );
 
   faqItems.forEach( function ( item ) {
     const toggle = item.querySelector( '.pd-faq-toggle' );
-    const answer = item.querySelector( '.pd-faq-answer' );
-
-    if ( ! toggle || ! answer ) return;
+    if ( ! toggle ) return;
 
     toggle.addEventListener( 'click', function () {
       const isOpen = item.classList.contains( 'is-open' );
 
-      // Close all other items in list
+      // Close all
       faqItems.forEach( function ( other ) {
         other.classList.remove( 'is-open' );
-        const otherToggle = other.querySelector( '.pd-faq-toggle' );
-        const otherAnswer = other.querySelector( '.pd-faq-answer' );
-        if ( otherToggle ) otherToggle.setAttribute( 'aria-expanded', 'false' );
-        if ( otherAnswer ) otherAnswer.hidden = true;
+        const t = other.querySelector( '.pd-faq-toggle' );
+        if ( t ) t.setAttribute( 'aria-expanded', 'false' );
       } );
 
-      // Toggle current item
+      // Open clicked
       if ( ! isOpen ) {
         item.classList.add( 'is-open' );
         toggle.setAttribute( 'aria-expanded', 'true' );
-        answer.hidden = false;
       }
     } );
   } );

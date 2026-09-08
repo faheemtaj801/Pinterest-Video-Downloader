@@ -1,45 +1,35 @@
 <?php
 /**
- * Input state template — URL input + download button (TikSav Design).
- *
- * Available variables:
- *   $type  string  'video', 'image', or 'gif'
+ * Input state template — exact TikSav.app design.
  *
  * @package Pinterest_Downloader
  */
-
-// Prevent direct file access.
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 $placeholder = esc_attr__( 'Paste Pinterest link here...', 'pinterest-downloader' );
+$btn_label   = esc_html__( 'Download', 'pinterest-downloader' );
 if ( 'gif' === $type ) {
 	$btn_label = esc_html__( 'Download GIF', 'pinterest-downloader' );
 } elseif ( 'image' === $type ) {
 	$btn_label = esc_html__( 'Download Image', 'pinterest-downloader' );
-} else {
-	$btn_label = esc_html__( 'Download', 'pinterest-downloader' );
 }
 ?>
 <div class="pd-input-container">
+	<form id="pd-download-form" role="search" aria-label="<?php esc_attr_e( 'Pinterest downloader', 'pinterest-downloader' ); ?>" novalidate>
 
-	<form class="pd-form" id="pd-download-form" novalidate>
-
-		<!-- Desktop & Tablet Inline Pill Wrap -->
-		<div class="pd-input-wrap pd-input-wrap--desktop">
-			<!-- Link Icon -->
+		<!-- Desktop inline pill -->
+		<div class="pd-input-wrap--desktop">
 			<div class="pd-input-icon" aria-hidden="true">
-				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
-					<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-					<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+				<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none"
+				     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+					<path stroke-linecap="round" stroke-linejoin="round"
+					      d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
 				</svg>
 			</div>
 
-			<label for="pd-url-input" class="pd-visually-hidden">
-				<?php esc_html_e( 'Paste Pinterest link here', 'pinterest-downloader' ); ?>
+			<label for="pd-url-input" class="pd-sr-only">
+				<?php esc_html_e( 'Paste Pinterest URL', 'pinterest-downloader' ); ?>
 			</label>
-
 			<input
 				type="url"
 				id="pd-url-input"
@@ -49,48 +39,47 @@ if ( 'gif' === $type ) {
 				autocorrect="off"
 				autocapitalize="none"
 				spellcheck="false"
+				inputmode="url"
 				aria-required="true"
 				aria-describedby="pd-input-error"
 			/>
 
-			<!-- Paste button -->
-			<button
-				type="button"
-				class="pd-paste-btn"
-				id="pd-paste-btn"
-				aria-label="<?php esc_attr_e( 'Paste from clipboard', 'pinterest-downloader' ); ?>"
-				title="<?php esc_attr_e( 'Paste from clipboard', 'pinterest-downloader' ); ?>"
-			>
-				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" aria-hidden="true">
-					<rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-					<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+			<button type="button" id="pd-paste-btn"
+			        class="pd-paste-btn"
+			        aria-label="<?php esc_attr_e( 'Paste from clipboard', 'pinterest-downloader' ); ?>">
+				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none"
+				     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+					<path stroke-linecap="round" stroke-linejoin="round"
+					      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
 				</svg>
-				<span><?php esc_html_e( 'Paste', 'pinterest-downloader' ); ?></span>
+				<?php esc_html_e( 'Paste', 'pinterest-downloader' ); ?>
 			</button>
 
-			<!-- Submit button -->
-			<button
-				type="submit"
-				class="pd-btn-primary"
-				id="pd-download-btn"
-				aria-label="<?php echo esc_attr( $btn_label ); ?>"
-			>
-				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true">
-					<path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 11l5 5 5-5M12 4v12"/>
+			<button type="submit" id="pd-download-btn"
+			        class="pd-btn-primary"
+			        aria-label="<?php echo esc_attr( $btn_label ); ?>">
+				<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none"
+				     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+					<path stroke-linecap="round" stroke-linejoin="round"
+					      d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 11l5 5 5-5M12 4v12"/>
 				</svg>
-				<span><?php echo $btn_label; ?></span>
+				<?php echo $btn_label; ?>
 			</button>
 		</div>
 
-		<!-- Mobile Stacked Wrap -->
+		<!-- Mobile stacked -->
 		<div class="pd-input-wrap--mobile">
-			<div class="pd-input-wrap">
+			<div class="pd-input-row">
 				<div class="pd-input-icon" aria-hidden="true">
-					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
-						<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-						<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+					<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none"
+					     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+						<path stroke-linecap="round" stroke-linejoin="round"
+						      d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
 					</svg>
 				</div>
+				<label for="pd-url-input-mobile" class="pd-sr-only">
+					<?php esc_html_e( 'Paste Pinterest URL', 'pinterest-downloader' ); ?>
+				</label>
 				<input
 					type="url"
 					id="pd-url-input-mobile"
@@ -100,55 +89,46 @@ if ( 'gif' === $type ) {
 					autocorrect="off"
 					autocapitalize="none"
 					spellcheck="false"
+					inputmode="url"
 				/>
-				<button
-					type="button"
-					class="pd-paste-btn"
-					id="pd-paste-btn-mobile"
-					aria-label="<?php esc_attr_e( 'Paste from clipboard', 'pinterest-downloader' ); ?>"
-				>
-					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" aria-hidden="true">
-						<rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-						<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+				<button type="button" id="pd-paste-btn-mobile"
+				        class="pd-paste-btn"
+				        aria-label="<?php esc_attr_e( 'Paste from clipboard', 'pinterest-downloader' ); ?>">
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none"
+					     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+						<path stroke-linecap="round" stroke-linejoin="round"
+						      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
 					</svg>
-					<span><?php esc_html_e( 'Paste', 'pinterest-downloader' ); ?></span>
+					<?php esc_html_e( 'Paste', 'pinterest-downloader' ); ?>
 				</button>
 			</div>
 
-			<button
-				type="submit"
-				class="pd-btn-primary pd-btn-primary--mobile"
-				id="pd-download-btn-mobile"
-			>
-				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="20" height="20" aria-hidden="true">
-					<path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 11l5 5 5-5M12 4v12"/>
+			<button type="submit" id="pd-download-btn-mobile"
+			        class="pd-btn-primary pd-btn-primary--full">
+				<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none"
+				     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+					<path stroke-linecap="round" stroke-linejoin="round"
+					      d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 11l5 5 5-5M12 4v12"/>
 				</svg>
-				<span><?php echo $btn_label; ?></span>
+				<?php echo $btn_label; ?>
 			</button>
 		</div>
 
-		<!-- Terms & conditions note -->
+		<!-- Terms note -->
 		<p class="pd-terms-note">
 			<span><?php esc_html_e( 'By using our service you accept our', 'pinterest-downloader' ); ?></span>
-			<a href="#pd-how-heading"><?php esc_html_e( 'Terms of Service', 'pinterest-downloader' ); ?></a>.
+			<a href="#pd-faq"><?php esc_html_e( 'Terms of Service', 'pinterest-downloader' ); ?></a>.
 		</p>
 
-		<!-- Inline validation error alert -->
-		<div
-			class="pd-inline-error"
-			id="pd-input-error"
-			role="alert"
-			aria-live="polite"
-			hidden
-		>
-			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" aria-hidden="true">
-				<circle cx="12" cy="12" r="10"/>
-				<line x1="12" y1="8" x2="12" y2="12"/>
-				<line x1="12" y1="16" x2="12.01" y2="16"/>
+		<!-- Inline error -->
+		<div id="pd-input-error" class="pd-inline-error" role="alert" aria-live="polite" hidden>
+			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none"
+			     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+				<path stroke-linecap="round" stroke-linejoin="round"
+				      d="M12 9v3m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
 			</svg>
 			<span id="pd-error-text"></span>
 		</div>
 
 	</form>
-
 </div>
