@@ -39,6 +39,13 @@ class PD_Plugin {
 	public $shortcode;
 
 	/**
+	 * Automated SEO and Schema manager.
+	 *
+	 * @var PD_SEO
+	 */
+	public $seo;
+
+	/**
 	 * Downloader engine.
 	 *
 	 * @var PD_Downloader_Engine
@@ -72,6 +79,7 @@ class PD_Plugin {
 		$this->ajax      = new PD_Ajax( $this->engine );
 		$this->assets    = new PD_Assets();
 		$this->shortcode = new PD_Shortcode( $this->assets );
+		$this->seo       = new PD_SEO();
 
 		add_action( 'init', array( $this, 'load_textdomain' ) );
 	}
