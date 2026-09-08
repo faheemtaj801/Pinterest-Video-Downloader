@@ -167,147 +167,148 @@
   display: block;
 }
 
-/* ── Input bar (white pill on blue) ───────────────────────────────── */
+/* ── Input bar (Unified Responsive Pill) ────────────────────────── */
 .pd-input-container {
-  width: 100%;
-  max-width: 672px;
-  margin: 0 auto;
+  width: 100% !important;
+  max-width: 680px !important;
+  margin: 0 auto !important;
 }
 
-/* Desktop */
-.pd-input-wrap--desktop {
-  display: none;
-  align-items: center;
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.20);
-  overflow: hidden;
-  transition: box-shadow 0.2s;
+.pd-input-box {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  background: #ffffff !important;
+  border-radius: 16px !important;
+  padding: 6px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.22) !important;
+  border: 2px solid transparent !important;
+  transition: box-shadow 0.2s, border-color 0.2s !important;
 }
 
-.pd-input-wrap--desktop:focus-within {
-  box-shadow: 0 8px 48px rgba(0,0,0,0.28);
-}
-
-@media (min-width: 640px) {
-  .pd-input-wrap--desktop {
-    display: flex;
-  }
-  .pd-input-wrap--mobile {
-    display: none !important;
-  }
+.pd-input-box:focus-within {
+  border-color: #93c5fd !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.32) !important;
 }
 
 .pd-input-icon {
-  padding-left: 20px;
-  padding-right: 12px;
-  color: #9ca3af;
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
+  padding: 0 8px 0 14px !important;
+  color: #94a3b8 !important;
+  display: flex !important;
+  align-items: center !important;
+  flex-shrink: 0 !important;
 }
 
 .pd-input-field {
-  flex: 1;
-  border: none;
-  outline: none;
-  background: transparent;
-  padding: 16px 12px;
-  font-family: 'Inter', sans-serif;
-  font-size: 1rem;
-  color: #1f2937;
-  min-width: 0;
+  flex: 1 1 auto !important;
+  border: none !important;
+  outline: none !important;
+  background: transparent !important;
+  padding: 12px 8px !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 16px !important;
+  color: #0f172a !important;
+  min-width: 0 !important;
+  box-shadow: none !important;
 }
 
 .pd-input-field::placeholder {
-  color: #9ca3af;
+  color: #9ca3af !important;
+}
+
+.pd-input-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-shrink: 0 !important;
 }
 
 /* Paste button */
 .pd-paste-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: transparent;
-  border: none;
-  border-left: 1px solid #f1f5f9;
-  color: #6b7280;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.875rem;
-  font-weight: 700;
-  padding: 12px 16px;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: color 0.15s;
-  white-space: nowrap;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  background: #f1f5f9 !important;
+  border: none !important;
+  border-radius: 10px !important;
+  color: #475569 !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  padding: 11px 16px !important;
+  cursor: pointer !important;
+  transition: background 0.15s, color 0.15s !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
 }
 
 .pd-paste-btn:hover {
-  color: #2563eb;
+  background: #e2e8f0 !important;
+  color: #2563eb !important;
 }
 
 /* Primary download button */
 .pd-btn-primary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background: #2563eb;
-  color: #fff;
-  border: none;
-  border-radius: 12px;
-  padding: 15px 30px;
-  margin: 8px;
-  font-family: 'Inter', sans-serif;
-  font-size: 1rem;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  cursor: pointer;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.20);
-  flex-shrink: 0;
-  white-space: nowrap;
-  text-decoration: none;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  background: #2563eb !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 12px !important;
+  padding: 13px 26px !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.40) !important;
+  white-space: nowrap !important;
+  text-decoration: none !important;
+  transition: transform 0.18s, background 0.18s, box-shadow 0.18s !important;
 }
 
 .pd-btn-primary:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.28);
-  background: #1d4ed8;
-}
-
-.pd-btn-primary:active:not(:disabled) {
-  transform: translateY(0);
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.50) !important;
+  background: #1d4ed8 !important;
 }
 
 .pd-btn-primary:disabled {
-  opacity: 0.75;
-  cursor: not-allowed;
+  opacity: 0.75 !important;
+  cursor: not-allowed !important;
 }
 
-/* Mobile layout */
-.pd-input-wrap--mobile {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.pd-input-wrap--mobile .pd-input-row {
-  display: flex;
-  align-items: center;
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.20);
-  overflow: hidden;
-  padding: 4px 8px;
-}
-
-.pd-btn-primary--full {
-  width: 100%;
-  justify-content: center;
-  padding: 16px 20px;
-  border-radius: 16px;
-  margin: 0;
+/* Mobile responsive layout */
+@media (max-width: 600px) {
+  .pd-input-box {
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+    padding: 12px !important;
+  }
+  .pd-input-icon {
+    display: none !important;
+  }
+  .pd-input-field {
+    width: 100% !important;
+    padding: 8px 4px !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    font-size: 15px !important;
+  }
+  .pd-input-actions {
+    width: 100% !important;
+    gap: 8px !important;
+  }
+  .pd-paste-btn {
+    flex: 1 !important;
+    justify-content: center !important;
+    padding: 12px 10px !important;
+  }
+  .pd-btn-primary {
+    flex: 2 !important;
+    justify-content: center !important;
+    padding: 12px 16px !important;
+  }
 }
 
 /* Terms note */

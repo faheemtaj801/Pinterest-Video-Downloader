@@ -36,7 +36,8 @@ class PD_Assets {
 	 * Constructor — registers hooks.
 	 */
 	public function __construct() {
-		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ) );
+		// Enqueue with priority 999 to load AFTER any WordPress theme styles.
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ), 999 );
 	}
 
 	/**
@@ -56,12 +57,18 @@ class PD_Assets {
 	 * Guarantees 100% reliable UI styling, brand colors, and zero FOUC on all themes and page builders.
 	 */
 	public function enqueue_frontend_assets() {
-		// 1. Enqueue Stylesheet in <head>
+		$css_file = PD_PLUGIN_DIR . 'public/css/pinterest-downloader.css';
+		$js_file  = PD_PLUGIN_DIR . 'public/js/pinterest-downloader.js';
+
+		$css_ver = file_exists( $css_file ) ? filemtime( $css_file ) : PD_VERSION;
+		$js_ver  = file_exists( $js_file ) ? filemtime( $js_file ) : PD_VERSION;
+
+		// 1. Enqueue Stylesheet
 		wp_enqueue_style(
 			'pinterest-downloader',
 			PD_PLUGIN_URL . 'public/css/pinterest-downloader.css',
 			array(),
-			PD_VERSION
+			$css_ver
 		);
 
 		// 2. Enqueue JavaScript in <footer>
@@ -69,7 +76,7 @@ class PD_Assets {
 			'pinterest-downloader',
 			PD_PLUGIN_URL . 'public/js/pinterest-downloader.js',
 			array(),
-			PD_VERSION,
+			$js_ver,
 			true // Load in footer.
 		);
 
