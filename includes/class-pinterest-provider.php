@@ -2,6 +2,10 @@
 /**
  * Pinterest extraction provider implementation.
  *
+ * Uses Pinterest's internal resource API (used by their own frontend) to
+ * retrieve structured pin data reliably, since Pinterest is a fully JS-rendered
+ * SPA and no useful data appears in the raw HTML response.
+ *
  * @package Pinterest_Downloader
  */
 
@@ -13,8 +17,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Class PD_Pinterest_Provider
  *
- * Extracts public media metadata directly from Pinterest URLs using
- * structured JSON-LD, OpenGraph tags, and public initial data blocks.
+ * Extracts public media metadata from Pinterest URLs using a three-tier approach:
+ *   1. Pinterest's internal resource API (/resource/PinResource/get/)
+ *   2. oEmbed endpoint (title + thumbnail fallback)
+ *   3. Raw HTML meta tag scan (og:image last resort)
  */
 class PD_Pinterest_Provider implements PD_Provider_Interface {
 
@@ -24,6 +30,13 @@ class PD_Pinterest_Provider implements PD_Provider_Interface {
 	 * @var string
 	 */
 	const ID = 'pinterest_public';
+
+	/**
+	 * Standard desktop Chrome User-Agent string.
+	 *
+	 * @var string
+	 */
+	const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
 
 	/**
 	 * Returns provider ID.
@@ -77,20 +90,385 @@ class PD_Pinterest_Provider implements PD_Provider_Interface {
 	 * @return PD_Provider_Result
 	 */
 	public function extract( $url, $requested_type = 'video' ) {
-		// 1. Resolve short URLs (e.g. pin.it) if necessary.
+
+		// 1. Resolve short URLs (pin.it) to canonical Pinterest URL.
 		$resolved_url = $this->resolve_redirects( $url );
 		if ( ! $resolved_url ) {
 			$resolved_url = $url;
 		}
 
-		// 2. Fetch page HTML safely.
+		// 2. Extract Pin ID from the resolved URL.
+		$pin_id = $this->extract_pin_id( $resolved_url );
+
+		// 3. Try Pinterest internal resource API first (most reliable for videos).
+		if ( $pin_id ) {
+			$result = $this->fetch_via_resource_api( $pin_id, $resolved_url, $requested_type );
+			if ( $result && $result->success ) {
+				return $result;
+			}
+		}
+
+		// 4. Fallback: Try oEmbed endpoint (gives title + thumbnail).
+		$oembed_data = $this->fetch_via_oembed( $resolved_url );
+
+		// 5. Fallback: Fetch raw HTML and scan meta tags.
+		$html_data = $this->fetch_via_html( $resolved_url );
+
+		// 6. Merge fallback data.
+		$merged = $this->merge_fallback_data( $oembed_data, $html_data );
+
+		if ( empty( $merged['video_url'] ) && empty( $merged['image_url'] ) ) {
+			return PD_Provider_Result::error(
+				'MEDIA_NOT_FOUND',
+				esc_html__( "We couldn't find downloadable media on this Pin. It may be private, removed, or not a video/image pin.", 'pinterest-downloader' )
+			);
+		}
+
+		// 7. Build result from merged fallback data.
+		return $this->build_result( $merged, $resolved_url, $requested_type );
+	}
+
+	// ─── Core Extraction Methods ───────────────────────────────────────────────
+
+	/**
+	 * Attempts to fetch pin data using Pinterest's internal resource API.
+	 *
+	 * Pinterest's own frontend calls this endpoint to render pin pages.
+	 * It returns structured JSON with video_list, images, title, etc.
+	 *
+	 * @param string $pin_id       Pin ID.
+	 * @param string $source_url   Canonical pin URL.
+	 * @param string $requested_type 'video' or 'image'.
+	 * @return PD_Provider_Result|null
+	 */
+	private function fetch_via_resource_api( $pin_id, $source_url, $requested_type ) {
+		$options = wp_json_encode(
+			array(
+				'options' => array(
+					'id'            => $pin_id,
+					'field_set_key' => 'detailed',
+				),
+				'context' => array(),
+			)
+		);
+
+		$api_url = add_query_arg(
+			array(
+				'source_url'     => urlencode( $source_url ),
+				'data'           => $options,
+				'_'              => time(),
+			),
+			'https://www.pinterest.com/resource/PinResource/get/'
+		);
+
+		$response = wp_remote_get(
+			$api_url,
+			array(
+				'timeout'     => 18,
+				'redirection' => 3,
+				'headers'     => array(
+					'User-Agent'      => self::UA,
+					'Accept'          => 'application/json, text/javascript, */*; q=0.01',
+					'Accept-Language' => 'en-US,en;q=0.9',
+					'Referer'         => $source_url,
+					'X-Requested-With' => 'XMLHttpRequest',
+					'X-APP-VERSION'   => 'cb6ca04',
+					'X-Pinterest-AppState' => 'active',
+				),
+				'sslverify'   => true,
+			)
+		);
+
+		if ( is_wp_error( $response ) ) {
+			return null;
+		}
+
+		$status = wp_remote_retrieve_response_code( $response );
+		if ( 200 !== (int) $status ) {
+			return null;
+		}
+
+		$body = wp_remote_retrieve_body( $response );
+		if ( empty( $body ) ) {
+			return null;
+		}
+
+		$json = json_decode( $body, true );
+		if ( ! is_array( $json ) ) {
+			return null;
+		}
+
+		// Navigate to the pin resource data.
+		$pin_data = null;
+		if ( ! empty( $json['resource_response']['data'] ) ) {
+			$pin_data = $json['resource_response']['data'];
+		} elseif ( ! empty( $json['data'] ) ) {
+			$pin_data = $json['data'];
+		}
+
+		if ( ! is_array( $pin_data ) ) {
+			return null;
+		}
+
+		// Extract from the pin resource data.
+		$extracted = $this->parse_pin_resource_data( $pin_data );
+
+		if ( empty( $extracted['video_url'] ) && empty( $extracted['image_url'] ) ) {
+			return null;
+		}
+
+		return $this->build_result( $extracted, $source_url, $requested_type );
+	}
+
+	/**
+	 * Parses Pinterest's internal pin resource data structure.
+	 *
+	 * @param array $pin_data Raw pin resource data array.
+	 * @return array Extracted media data.
+	 */
+	private function parse_pin_resource_data( array $pin_data ) {
+		$extracted = array(
+			'title'         => '',
+			'video_url'     => '',
+			'image_url'     => '',
+			'thumbnail_url' => '',
+			'width'         => null,
+			'height'        => null,
+			'duration'      => null,
+			'variants'      => array(),
+		);
+
+		// Title.
+		if ( ! empty( $pin_data['title'] ) ) {
+			$extracted['title'] = $pin_data['title'];
+		} elseif ( ! empty( $pin_data['grid_title'] ) ) {
+			$extracted['title'] = $pin_data['grid_title'];
+		} elseif ( ! empty( $pin_data['description'] ) ) {
+			$extracted['title'] = substr( $pin_data['description'], 0, 80 );
+		}
+
+		// Duration.
+		if ( ! empty( $pin_data['duration'] ) ) {
+			$extracted['duration'] = $this->format_duration( $pin_data['duration'] );
+		}
+
+		// Videos from video_list.
+		if ( ! empty( $pin_data['videos']['video_list'] ) && is_array( $pin_data['videos']['video_list'] ) ) {
+			$this->parse_video_list( $pin_data['videos']['video_list'], $extracted );
+		} elseif ( ! empty( $pin_data['video_list'] ) && is_array( $pin_data['video_list'] ) ) {
+			$this->parse_video_list( $pin_data['video_list'], $extracted );
+		}
+
+		// Story pin videos.
+		if ( empty( $extracted['video_url'] ) && ! empty( $pin_data['story_pin_data']['pages'] ) ) {
+			foreach ( $pin_data['story_pin_data']['pages'] as $page ) {
+				if ( ! empty( $page['blocks'] ) ) {
+					foreach ( $page['blocks'] as $block ) {
+						if ( ! empty( $block['video']['video_list'] ) ) {
+							$this->parse_video_list( $block['video']['video_list'], $extracted );
+							if ( ! empty( $extracted['video_url'] ) ) break 2;
+						}
+					}
+				}
+			}
+		}
+
+		// Images.
+		if ( ! empty( $pin_data['images'] ) && is_array( $pin_data['images'] ) ) {
+			$images = $pin_data['images'];
+			// Prefer original size.
+			$size_priority = array( 'orig', '1200x', '736x', '564x', '474x', '236x' );
+			foreach ( $size_priority as $size ) {
+				if ( ! empty( $images[ $size ]['url'] ) ) {
+					$extracted['image_url']     = $images[ $size ]['url'];
+					$extracted['thumbnail_url'] = $images[ $size ]['url'];
+					if ( empty( $extracted['width'] ) && ! empty( $images[ $size ]['width'] ) ) {
+						$extracted['width'] = intval( $images[ $size ]['width'] );
+					}
+					if ( empty( $extracted['height'] ) && ! empty( $images[ $size ]['height'] ) ) {
+						$extracted['height'] = intval( $images[ $size ]['height'] );
+					}
+					break;
+				}
+			}
+		}
+
+		// image_signature fallback.
+		if ( empty( $extracted['image_url'] ) && ! empty( $pin_data['image_signature'] ) ) {
+			$extracted['image_url'] = 'https://i.pinimg.com/originals/' . $pin_data['image_signature'];
+		}
+
+		// Upgrade thumbnail.
+		if ( ! empty( $extracted['image_url'] ) ) {
+			$extracted['image_url'] = $this->upgrade_pinimg_url( $extracted['image_url'] );
+		}
+		if ( ! empty( $extracted['thumbnail_url'] ) ) {
+			$extracted['thumbnail_url'] = $this->upgrade_pinimg_url( $extracted['thumbnail_url'] );
+		}
+
+		// Clean title.
+		if ( ! empty( $extracted['title'] ) ) {
+			$extracted['title'] = $this->clean_title( $extracted['title'] );
+		}
+
+		return $extracted;
+	}
+
+	/**
+	 * Parses a video_list array into extracted video data.
+	 *
+	 * @param array $video_list  The video_list array from Pinterest API.
+	 * @param array $extracted   Reference to extracted data.
+	 */
+	private function parse_video_list( array $video_list, array &$extracted ) {
+		$best_url  = '';
+		$max_width = 0;
+		$variants  = array();
+
+		foreach ( $video_list as $quality_key => $stream ) {
+			if ( empty( $stream['url'] ) ) {
+				continue;
+			}
+
+			$raw_url = $stream['url'];
+			$is_mp4  = ( false !== stripos( $raw_url, '.mp4' ) );
+			$is_m3u8 = ( false !== stripos( $raw_url, '.m3u8' ) );
+
+			// Skip HLS playlists if we can get MP4s.
+			$final_url = $raw_url;
+			if ( $is_m3u8 ) {
+				// Convert HLS manifest to 720p MP4 equivalent path.
+				$converted = preg_replace( '#/hls/#i', '/720p/', $raw_url );
+				$converted = preg_replace( '#\.m3u8(\?.*)?$#i', '.mp4$1', $converted );
+				if ( $converted ) {
+					$final_url = $converted;
+				}
+			}
+
+			$w = ! empty( $stream['width'] ) ? intval( $stream['width'] ) : 0;
+			$h = ! empty( $stream['height'] ) ? intval( $stream['height'] ) : 0;
+
+			// Derive quality label.
+			if ( ! empty( $stream['quality'] ) ) {
+				$label = esc_html( $stream['quality'] );
+			} elseif ( $w ) {
+				$label = "{$w}p MP4";
+			} else {
+				$label = strtoupper( (string) $quality_key ) . ' MP4';
+			}
+
+			$variants[] = array(
+				'label'   => $label,
+				'url'     => esc_url_raw( $final_url ),
+				'width'   => $w,
+				'height'  => $h,
+				'quality' => $w ? "{$w}p" : 'HD',
+				'format'  => 'mp4',
+			);
+
+			// Pick the highest resolution as the primary URL.
+			if ( $w > $max_width || ( empty( $best_url ) && ( $is_mp4 || $is_m3u8 ) ) ) {
+				if ( $is_mp4 || $is_m3u8 ) {
+					$max_width          = $w;
+					$best_url           = esc_url_raw( $final_url );
+					$extracted['width'] = $w ?: ( $extracted['width'] ?? null );
+					$extracted['height']= $h ?: ( $extracted['height'] ?? null );
+				}
+			}
+		}
+
+		if ( ! empty( $best_url ) ) {
+			$extracted['video_url'] = $best_url;
+			// Sort variants by resolution descending.
+			usort( $variants, function( $a, $b ) {
+				return $b['width'] - $a['width'];
+			} );
+			$extracted['variants'] = $variants;
+		}
+	}
+
+	/**
+	 * Attempts to fetch pin metadata via Pinterest's oEmbed endpoint.
+	 *
+	 * Returns title and thumbnail URL for images; no video data available via this endpoint.
+	 *
+	 * @param string $url Canonical pin URL.
+	 * @return array Partial data array.
+	 */
+	private function fetch_via_oembed( $url ) {
+		$data = array(
+			'title'         => '',
+			'image_url'     => '',
+			'thumbnail_url' => '',
+		);
+
+		$oembed_url = add_query_arg(
+			array(
+				'url'    => urlencode( $url ),
+				'format' => 'json',
+			),
+			'https://www.pinterest.com/oembed.json'
+		);
+
+		$response = wp_remote_get(
+			$oembed_url,
+			array(
+				'timeout'   => 10,
+				'headers'   => array(
+					'User-Agent'      => self::UA,
+					'Accept'          => 'application/json',
+					'Accept-Language' => 'en-US,en;q=0.9',
+				),
+				'sslverify' => true,
+			)
+		);
+
+		if ( is_wp_error( $response ) || 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
+			return $data;
+		}
+
+		$body = wp_remote_retrieve_body( $response );
+		$json = json_decode( $body, true );
+		if ( ! is_array( $json ) ) {
+			return $data;
+		}
+
+		if ( ! empty( $json['title'] ) ) {
+			$data['title'] = $this->clean_title( $json['title'] );
+		}
+		if ( ! empty( $json['thumbnail_url'] ) ) {
+			$data['image_url']     = $this->upgrade_pinimg_url( $json['thumbnail_url'] );
+			$data['thumbnail_url'] = $data['image_url'];
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Fetches the raw HTML of a pin page and extracts meta tags.
+	 *
+	 * This is a last-resort fallback. Pinterest's SPA delivers very little useful data
+	 * in the initial HTML, but og:image and og:title are sometimes present.
+	 *
+	 * @param string $url Canonical pin URL.
+	 * @return array Partial data array.
+	 */
+	private function fetch_via_html( $url ) {
+		$data = array(
+			'title'         => '',
+			'video_url'     => '',
+			'image_url'     => '',
+			'thumbnail_url' => '',
+			'variants'      => array(),
+		);
+
 		$response = wp_safe_remote_get(
-			$resolved_url,
+			$url,
 			array(
 				'timeout'     => 15,
 				'redirection' => 5,
 				'headers'     => array(
-					'User-Agent'      => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+					'User-Agent'      => self::UA,
 					'Accept'          => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
 					'Accept-Language' => 'en-US,en;q=0.9',
 					'Cache-Control'   => 'no-cache',
@@ -99,85 +477,129 @@ class PD_Pinterest_Provider implements PD_Provider_Interface {
 			)
 		);
 
-		// 3. Handle network / HTTP errors.
 		if ( is_wp_error( $response ) ) {
-			$error_message = $response->get_error_message();
-			if ( false !== stripos( $error_message, 'timed out' ) || false !== stripos( $error_message, 'timeout' ) ) {
-				return PD_Provider_Result::error(
-					'TIMEOUT',
-					esc_html__( 'Processing took longer than expected. Please try again in a moment.', 'pinterest-downloader' )
-				);
-			}
-
-			return PD_Provider_Result::error(
-				'PROVIDER_ERROR',
-				esc_html__( 'Unable to connect to Pinterest. Please check the link and try again.', 'pinterest-downloader' )
-			);
+			return $data;
 		}
 
-		$status_code = wp_remote_retrieve_response_code( $response );
-		if ( 404 === $status_code ) {
-			return PD_Provider_Result::error(
-				'MEDIA_NOT_FOUND',
-				esc_html__( 'This Pin was not found. It may have been deleted or the link is incorrect.', 'pinterest-downloader' )
-			);
-		}
-
-		if ( 401 === $status_code || 403 === $status_code ) {
-			return PD_Provider_Result::error(
-				'PRIVATE_CONTENT',
-				esc_html__( 'This Pin is private or requires login. Only public Pins can be processed.', 'pinterest-downloader' )
-			);
-		}
-
-		if ( 429 === $status_code ) {
-			return PD_Provider_Result::error(
-				'RATE_LIMITED',
-				esc_html__( 'Too many requests. Please wait a few seconds before trying again.', 'pinterest-downloader' )
-			);
-		}
-
-		if ( $status_code < 200 || $status_code >= 400 ) {
-			return PD_Provider_Result::error(
-				'PROVIDER_ERROR',
-				esc_html__( 'Pinterest returned an unexpected response code (' . intval( $status_code ) . ').', 'pinterest-downloader' )
-			);
+		$status = wp_remote_retrieve_response_code( $response );
+		if ( $status < 200 || $status >= 400 ) {
+			return $data;
 		}
 
 		$html = wp_remote_retrieve_body( $response );
 		if ( empty( $html ) ) {
-			return PD_Provider_Result::error(
-				'MEDIA_NOT_FOUND',
-				esc_html__( 'No content received from this Pin link.', 'pinterest-downloader' )
-			);
+			return $data;
 		}
 
-		// 4. Extract data using multiple complementary strategies.
-		$data = $this->parse_pinterest_html( $html, $resolved_url );
+		// Unescape slashes for regex scanning.
+		$clean = str_replace( '\/', '/', $html );
 
-		if ( ! $data || ( empty( $data['video_url'] ) && empty( $data['image_url'] ) ) ) {
-			return PD_Provider_Result::error(
-				'MEDIA_NOT_FOUND',
-				esc_html__( "We couldn't find downloadable media on this Pin. Please verify it is a valid public Pin.", 'pinterest-downloader' )
-			);
+		// og:image.
+		if ( preg_match( '/<meta[^>]*property=["\']og:image["\'][^>]*content=["\']([^"\']+)["\']/i', $html, $m ) ||
+			 preg_match( '/<meta[^>]*content=["\']([^"\']+)["\'][^>]*property=["\']og:image["\']/i', $html, $m ) ) {
+			$data['image_url']     = $this->upgrade_pinimg_url( $m[1] );
+			$data['thumbnail_url'] = $data['image_url'];
 		}
 
-		// 5. Determine media type and construct normalized result.
+		// og:title / <title>.
+		if ( empty( $data['title'] ) ) {
+			if ( preg_match( '/<meta[^>]*property=["\']og:title["\'][^>]*content=["\']([^"\']+)["\']/i', $html, $m ) ) {
+				$data['title'] = $this->clean_title( html_entity_decode( $m[1], ENT_QUOTES | ENT_HTML5, 'UTF-8' ) );
+			} elseif ( preg_match( '/<title[^>]*>(.*?)<\/title>/is', $html, $m ) ) {
+				$data['title'] = $this->clean_title( html_entity_decode( $m[1], ENT_QUOTES | ENT_HTML5, 'UTF-8' ) );
+			}
+		}
+
+		// Direct MP4 scan (v.pinimg.com videos).
+		if ( preg_match_all( '#https?://v(?:\d+)?\.pinimg\.com/videos/[^\s"\'<>\\\\]+?\.mp4#i', $clean, $mp4_m ) ) {
+			foreach ( $mp4_m[0] as $mp4_url ) {
+				$mp4_url = esc_url_raw( trim( $mp4_url ) );
+				if ( empty( $data['video_url'] ) ) {
+					$data['video_url'] = $mp4_url;
+				}
+				$label = ( false !== stripos( $mp4_url, '720p' ) ) ? '720p HD MP4' : 'MP4 Video';
+				$data['variants'][] = array(
+					'label'   => $label,
+					'url'     => $mp4_url,
+					'quality' => ( false !== stripos( $mp4_url, '720p' ) ) ? '720p' : 'HD',
+					'format'  => 'mp4',
+				);
+			}
+		}
+
+		// HLS m3u8 scan + conversion.
+		if ( empty( $data['video_url'] ) && preg_match_all( '#https?://v(?:\d+)?\.pinimg\.com/videos/[^\s"\'<>\\\\]+?\.m3u8#i', $clean, $m3u8_m ) ) {
+			foreach ( $m3u8_m[0] as $m3u8_url ) {
+				$converted = preg_replace( '#/hls/#i', '/720p/', $m3u8_url );
+				$converted = preg_replace( '#\.m3u8(\?.*)?$#i', '.mp4$1', $converted );
+				$converted = esc_url_raw( trim( $converted ) );
+				if ( empty( $data['video_url'] ) ) {
+					$data['video_url'] = $converted;
+				}
+				$data['variants'][] = array(
+					'label'   => '720p HD MP4',
+					'url'     => $converted,
+					'quality' => '720p',
+					'format'  => 'mp4',
+				);
+			}
+		}
+
+		// pinimg.com image fallback.
+		if ( empty( $data['image_url'] ) && preg_match_all( '#https?://i\.pinimg\.com/(?:originals|\d+x)/[^\s"\'<>\\\\]+?\.(?:jpg|jpeg|png|webp)#i', $clean, $img_m ) ) {
+			$data['image_url']     = $this->upgrade_pinimg_url( esc_url_raw( $img_m[0][0] ) );
+			$data['thumbnail_url'] = $data['image_url'];
+		}
+
+		return $data;
+	}
+
+	// ─── Helpers ───────────────────────────────────────────────────────────────
+
+	/**
+	 * Merges oEmbed and raw-HTML fallback data, giving priority to whichever has more info.
+	 *
+	 * @param array $oembed Partial data from oEmbed.
+	 * @param array $html   Partial data from HTML.
+	 * @return array Merged data.
+	 */
+	private function merge_fallback_data( array $oembed, array $html ) {
+		$merged = array(
+			'title'         => $oembed['title'] ?: $html['title'],
+			'video_url'     => $html['video_url'] ?? '',
+			'image_url'     => $oembed['image_url'] ?: ( $html['image_url'] ?? '' ),
+			'thumbnail_url' => $oembed['thumbnail_url'] ?: ( $html['thumbnail_url'] ?? '' ),
+			'width'         => null,
+			'height'        => null,
+			'duration'      => null,
+			'variants'      => $html['variants'] ?? array(),
+		);
+		return $merged;
+	}
+
+	/**
+	 * Builds a PD_Provider_Result from extracted media data.
+	 *
+	 * @param array  $data         Extracted media data.
+	 * @param string $source_url   Canonical source URL.
+	 * @param string $requested_type 'video' or 'image'.
+	 * @return PD_Provider_Result
+	 */
+	private function build_result( array $data, $source_url, $requested_type ) {
 		$is_video = ! empty( $data['video_url'] );
 
-		// If video was found
 		if ( $is_video ) {
 			$variants = ! empty( $data['variants'] ) ? $data['variants'] : array();
 
-			// Ensure primary MP4 is in variants
-			$has_primary = false;
+			// Ensure the primary video is in variants list.
+			$primary_in_variants = false;
 			foreach ( $variants as $v ) {
 				if ( ! empty( $v['url'] ) && $v['url'] === $data['video_url'] ) {
-					$has_primary = true;
+					$primary_in_variants = true;
 					break;
 				}
 			}
-			if ( ! $has_primary ) {
+			if ( ! $primary_in_variants ) {
 				array_unshift(
 					$variants,
 					array(
@@ -191,7 +613,7 @@ class PD_Pinterest_Provider implements PD_Provider_Interface {
 				);
 			}
 
-			// Add cover image to variants
+			// Add cover image variant.
 			if ( ! empty( $data['image_url'] ) ) {
 				$variants[] = array(
 					'label'   => esc_html__( 'Cover Image (HD)', 'pinterest-downloader' ),
@@ -208,18 +630,18 @@ class PD_Pinterest_Provider implements PD_Provider_Interface {
 					'media_type'    => 'video',
 					'format'        => 'mp4',
 					'media_url'     => $data['video_url'],
-					'thumbnail_url' => ! empty( $data['thumbnail_url'] ) ? $data['thumbnail_url'] : $data['image_url'],
+					'thumbnail_url' => ! empty( $data['thumbnail_url'] ) ? $data['thumbnail_url'] : ( $data['image_url'] ?? '' ),
 					'title'         => ! empty( $data['title'] ) ? $data['title'] : esc_html__( 'Pinterest Video', 'pinterest-downloader' ),
 					'width'         => ! empty( $data['width'] ) ? $data['width'] : 720,
 					'height'        => ! empty( $data['height'] ) ? $data['height'] : 1280,
 					'duration'      => ! empty( $data['duration'] ) ? $data['duration'] : null,
-					'source_url'    => $resolved_url,
+					'source_url'    => $source_url,
 					'variants'      => $variants,
 				)
 			);
 		}
 
-		// If user explicitly requested a video but no video stream was found, do not silently downgrade to image!
+		// Video was requested but not found.
 		if ( 'video' === $requested_type ) {
 			return PD_Provider_Result::error(
 				'VIDEO_NOT_FOUND',
@@ -227,13 +649,12 @@ class PD_Pinterest_Provider implements PD_Provider_Interface {
 			);
 		}
 
-		// Detect if image is a true GIF.
-		$img_url       = $data['image_url'];
-		$img_ext       = strtolower( pathinfo( wp_parse_url( $img_url, PHP_URL_PATH ), PATHINFO_EXTENSION ) );
-		$is_gif        = ( 'gif' === $img_ext ) || ( ! empty( $data['format'] ) && 'gif' === strtolower( $data['format'] ) );
-		$media_type    = $is_gif ? 'gif' : 'image';
-		$format        = $is_gif ? 'gif' : ( $img_ext ? $img_ext : 'jpg' );
-		$default_title = $is_gif ? esc_html__( 'Pinterest GIF', 'pinterest-downloader' ) : esc_html__( 'Pinterest Image', 'pinterest-downloader' );
+		// Image / GIF result.
+		$img_url    = $data['image_url'];
+		$img_ext    = strtolower( pathinfo( wp_parse_url( $img_url, PHP_URL_PATH ), PATHINFO_EXTENSION ) );
+		$is_gif     = ( 'gif' === $img_ext ) || ( ! empty( $data['format'] ) && 'gif' === strtolower( $data['format'] ) );
+		$media_type = $is_gif ? 'gif' : 'image';
+		$format     = $is_gif ? 'gif' : ( $img_ext ?: 'jpg' );
 
 		$image_variants = array(
 			array(
@@ -244,21 +665,38 @@ class PD_Pinterest_Provider implements PD_Provider_Interface {
 			),
 		);
 
-		// Image or GIF result.
 		return PD_Provider_Result::success(
 			array(
 				'media_type'    => $media_type,
 				'format'        => $format,
 				'media_url'     => $img_url,
 				'thumbnail_url' => $img_url,
-				'title'         => ! empty( $data['title'] ) ? $data['title'] : $default_title,
+				'title'         => ! empty( $data['title'] ) ? $data['title'] : ( $is_gif ? esc_html__( 'Pinterest GIF', 'pinterest-downloader' ) : esc_html__( 'Pinterest Image', 'pinterest-downloader' ) ),
 				'width'         => ! empty( $data['width'] ) ? $data['width'] : null,
 				'height'        => ! empty( $data['height'] ) ? $data['height'] : null,
 				'duration'      => null,
-				'source_url'    => $resolved_url,
+				'source_url'    => $source_url,
 				'variants'      => $image_variants,
 			)
 		);
+	}
+
+	/**
+	 * Extracts the numeric Pin ID from a Pinterest URL.
+	 *
+	 * Handles URLs like:
+	 *   - https://www.pinterest.com/pin/123456789/
+	 *   - https://pinterest.com/pin/123456789012345678/
+	 *   - https://www.pinterest.co.uk/pin/987654321/
+	 *
+	 * @param string $url Canonical Pinterest URL.
+	 * @return string|null Pin ID or null if not found.
+	 */
+	private function extract_pin_id( $url ) {
+		if ( preg_match( '#/pin/(\d+)/?(?:[?#]|$)#i', $url, $m ) ) {
+			return $m[1];
+		}
+		return null;
 	}
 
 	/**
@@ -277,330 +715,53 @@ class PD_Pinterest_Provider implements PD_Provider_Interface {
 			$url,
 			array(
 				'timeout'     => 10,
-				'redirection' => 0,
+				'redirection' => 5,
 				'headers'     => array(
-					'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+					'User-Agent' => self::UA,
 				),
 			)
 		);
 
 		if ( ! is_wp_error( $head ) ) {
+			// WordPress follows redirects up to the 'redirection' limit;
+			// the final URL is in the 'x-final-location' pseudo-header or we can
+			// look at the response object's URL.
 			$headers = wp_remote_retrieve_headers( $head );
+
+			// If redirection was NOT followed (redirection=0), use Location header.
 			if ( ! empty( $headers['location'] ) ) {
-				return esc_url_raw( $headers['location'] );
+				$location = $headers['location'];
+				// Ensure absolute URL.
+				if ( 0 === strpos( $location, '/' ) ) {
+					$location = 'https://www.pinterest.com' . $location;
+				}
+				return esc_url_raw( $location );
+			}
+		}
+
+		// Follow redirect chain manually with GET.
+		$get = wp_safe_remote_get(
+			$url,
+			array(
+				'timeout'     => 10,
+				'redirection' => 5,
+				'headers'     => array(
+					'User-Agent' => self::UA,
+				),
+				'sslverify'   => true,
+			)
+		);
+
+		if ( ! is_wp_error( $get ) ) {
+			// WordPress reports the final URL in the response headers as 'x-final-location'
+			// or we can try to parse <link rel="canonical"> from the body.
+			$body = wp_remote_retrieve_body( $get );
+			if ( preg_match( '/<link[^>]*rel=["\']canonical["\'][^>]*href=["\']([^"\']+)["\']/i', $body, $m ) ) {
+				return esc_url_raw( $m[1] );
 			}
 		}
 
 		return $url;
-	}
-
-	/**
-	 * Parses HTML using JSON-LD, embedded __PWS_DATA__ scripts, and OpenGraph meta tags.
-	 *
-	 * @param string $html HTML string.
-	 * @param string $url  Canonical source URL.
-	 * @return array
-	 */
-	private function parse_pinterest_html( $html, $url ) {
-		$extracted = array(
-			'title'         => '',
-			'video_url'     => '',
-			'image_url'     => '',
-			'thumbnail_url' => '',
-			'width'         => null,
-			'height'        => null,
-			'duration'      => null,
-			'variants'      => array(),
-		);
-
-		// Strategy 1: Parse __PWS_DATA__ or __INITIAL_DATA__ JSON script blocks (richest data).
-		if ( preg_match( '/<script[^>]*id="__PWS_DATA__"[^>]*>(.*?)<\/script>/is', $html, $matches ) ||
-			 preg_match( '/<script[^>]*data-relay-response="true"[^>]*>(.*?)<\/script>/is', $html, $matches ) ||
-			 preg_match( '/window\.__INITIAL_DATA__\s*=\s*(\{.*?\});?\s*<\/script>/is', $html, $matches ) ) {
-
-			$json_data = json_decode( trim( $matches[1] ), true );
-			if ( is_array( $json_data ) ) {
-				$this->extract_from_pws_data( $json_data, $extracted );
-			}
-		}
-
-		// Strategy 2: Schema.org JSON-LD (<script type="application/ld+json">).
-		if ( preg_match_all( '/<script[^>]*type=["\']application\/ld\+json["\'][^>]*>(.*?)<\/script>/is', $html, $ld_matches ) ) {
-			foreach ( $ld_matches[1] as $ld_str ) {
-				$ld_data = json_decode( trim( $ld_str ), true );
-				if ( is_array( $ld_data ) ) {
-					$this->extract_from_json_ld( $ld_data, $extracted );
-				}
-			}
-		}
-
-		// Strategy 3: OpenGraph & Twitter Meta Tags (reliable fallback).
-		$this->extract_from_meta_tags( $html, $extracted );
-
-		// Strategy 4: Deep Regex Scanner across raw & unescaped HTML (for modern Pinterest scripts & HLS conversion).
-		$this->extract_from_raw_html( $html, $extracted );
-
-		// Clean title if present.
-		if ( ! empty( $extracted['title'] ) ) {
-			$extracted['title'] = $this->clean_title( $extracted['title'] );
-		}
-
-		// Upgrade image URL to original full-resolution if it's a pinimg URL.
-		if ( ! empty( $extracted['image_url'] ) ) {
-			$extracted['image_url'] = $this->upgrade_pinimg_url( $extracted['image_url'] );
-		}
-		if ( ! empty( $extracted['thumbnail_url'] ) ) {
-			$extracted['thumbnail_url'] = $this->upgrade_pinimg_url( $extracted['thumbnail_url'] );
-		}
-
-		return $extracted;
-	}
-
-	/**
-	 * Deep regex scanner across the raw and unescaped HTML.
-	 *
-	 * Scans for direct MP4 and HLS m3u8 streams on v.pinimg.com and converts m3u8 to 720p MP4.
-	 *
-	 * @param string $html      Raw HTML.
-	 * @param array  $extracted Reference to extracted array.
-	 */
-	private function extract_from_raw_html( $html, array &$extracted ) {
-		// Clean and unescape slashes
-		$clean = str_replace( '\/', '/', $html );
-
-		// 1. Direct MP4 scan
-		if ( preg_match_all( '#https?://(?:v\d?|v)\.pinimg\.com/videos/[^\s"\'<>\\]+?\.mp4#i', $clean, $mp4_matches ) ) {
-			foreach ( $mp4_matches[0] as $url ) {
-				$url = esc_url_raw( trim( $url ) );
-				if ( empty( $extracted['video_url'] ) ) {
-					$extracted['video_url'] = $url;
-				}
-				$label = ( false !== stripos( $url, '720p' ) ) ? '720p (HD MP4)' : 'MP4 Video';
-				$extracted['variants'][] = array(
-					'label'   => $label,
-					'quality' => ( false !== stripos( $url, '720p' ) ) ? '720p' : 'HD',
-					'url'     => $url,
-					'format'  => 'mp4',
-				);
-			}
-		}
-
-		// 2. HLS m3u8 stream scan & conversion to 720p MP4
-		if ( preg_match_all( '#https?://(?:v\d?|v)\.pinimg\.com/videos/[^\s"\'<>\\]+?\.m3u8#i', $clean, $m3u8_matches ) ) {
-			foreach ( $m3u8_matches[0] as $m3u8_url ) {
-				$m3u8_url = trim( $m3u8_url );
-				$converted_720p = preg_replace( '#/hls/#i', '/720p/', $m3u8_url );
-				$converted_720p = preg_replace( '#\.m3u8(\?.*)?$#i', '.mp4$1', $converted_720p );
-				$converted_720p = esc_url_raw( $converted_720p );
-
-				if ( empty( $extracted['video_url'] ) ) {
-					$extracted['video_url'] = $converted_720p;
-				}
-
-				$extracted['variants'][] = array(
-					'label'   => esc_html__( 'Download MP4 (720p HD)', 'pinterest-downloader' ),
-					'quality' => '720p',
-					'url'     => $converted_720p,
-					'format'  => 'mp4',
-				);
-			}
-		}
-
-		// 3. Fallback image scan if image_url is still empty
-		if ( empty( $extracted['image_url'] ) && preg_match_all( '#https?://i\.pinimg\.com/(?:originals|\d+x)/[^\s"\'<>\\]+?\.(?:jpg|jpeg|png|webp)#i', $clean, $img_matches ) ) {
-			$first_img = esc_url_raw( $img_matches[0][0] );
-			$extracted['image_url']     = $this->upgrade_pinimg_url( $first_img );
-			$extracted['thumbnail_url'] = $extracted['image_url'];
-		}
-	}
-
-	/**
-	 * Extracts data recursively from Pinterest's internal state JSON.
-	 *
-	 * @param array $data      State data array.
-	 * @param array $extracted Reference to extracted data array.
-	 */
-	private function extract_from_pws_data( array $data, array &$extracted ) {
-		// Look for video_list in any node.
-		$video_list = $this->find_nested_key( $data, 'video_list' );
-		if ( is_array( $video_list ) ) {
-			// Find best MP4 stream.
-			$best_url  = '';
-			$max_width = 0;
-			$variants  = array();
-
-			foreach ( $video_list as $quality_key => $stream ) {
-				if ( ! empty( $stream['url'] ) ) {
-					$raw_stream_url = $stream['url'];
-					$is_mp4         = ( false !== stripos( $raw_stream_url, '.mp4' ) );
-					$is_m3u8        = ( false !== stripos( $raw_stream_url, '.m3u8' ) );
-
-					$final_url = $raw_stream_url;
-					if ( $is_m3u8 ) {
-						// Auto-convert HLS playlist to 720p MP4
-						$final_url = preg_replace( '#/hls/#i', '/720p/', $raw_stream_url );
-						$final_url = preg_replace( '#\.m3u8(\?.*)?$#i', '.mp4$1', $final_url );
-					}
-
-					$w = ! empty( $stream['width'] ) ? intval( $stream['width'] ) : ( $is_m3u8 ? 720 : 0 );
-					$h = ! empty( $stream['height'] ) ? intval( $stream['height'] ) : ( $is_m3u8 ? 1280 : 0 );
-					$label = ! empty( $stream['quality'] ) ? $stream['quality'] : ( $w ? "{$w}p" : $quality_key );
-
-					$variants[] = array(
-						'label'   => $label,
-						'url'     => $final_url,
-						'width'   => $w,
-						'height'  => $h,
-						'quality' => $w ? "{$w}p" : 'HD',
-						'format'  => 'mp4',
-					);
-
-					if ( $w > $max_width || empty( $best_url ) ) {
-						$max_width          = $w;
-						$best_url           = $final_url;
-						$extracted['width'] = $w;
-						$extracted['height']= $h;
-					}
-				}
-			}
-
-			if ( $best_url ) {
-				$extracted['video_url'] = $best_url;
-				if ( ! empty( $variants ) ) {
-					$extracted['variants'] = $variants;
-				}
-			}
-		}
-
-		// Look for images in pins.
-		$images = $this->find_nested_key( $data, 'images' );
-		if ( is_array( $images ) ) {
-			if ( ! empty( $images['orig']['url'] ) ) {
-				$extracted['image_url']     = $images['orig']['url'];
-				$extracted['thumbnail_url'] = $images['orig']['url'];
-				if ( empty( $extracted['width'] ) && ! empty( $images['orig']['width'] ) ) {
-					$extracted['width'] = intval( $images['orig']['width'] );
-				}
-				if ( empty( $extracted['height'] ) && ! empty( $images['orig']['height'] ) ) {
-					$extracted['height'] = intval( $images['orig']['height'] );
-				}
-			} elseif ( ! empty( $images['736x']['url'] ) && empty( $extracted['image_url'] ) ) {
-				$extracted['image_url']     = $images['736x']['url'];
-				$extracted['thumbnail_url'] = $images['736x']['url'];
-			}
-		}
-
-		// Look for pin title/description.
-		if ( empty( $extracted['title'] ) ) {
-			$title = $this->find_nested_key( $data, 'title' );
-			if ( is_string( $title ) && ! empty( $title ) ) {
-				$extracted['title'] = $title;
-			} else {
-				$grid_title = $this->find_nested_key( $data, 'grid_title' );
-				if ( is_string( $grid_title ) && ! empty( $grid_title ) ) {
-					$extracted['title'] = $grid_title;
-				}
-			}
-		}
-
-		// Look for duration.
-		if ( empty( $extracted['duration'] ) ) {
-			$duration = $this->find_nested_key( $data, 'duration' );
-			if ( $duration ) {
-				$extracted['duration'] = $this->format_duration( $duration );
-			}
-		}
-	}
-
-	/**
-	 * Extracts data from Schema.org JSON-LD data.
-	 *
-	 * @param array $ld        JSON-LD object.
-	 * @param array $extracted Reference to extracted data array.
-	 */
-	private function extract_from_json_ld( array $ld, array &$extracted ) {
-		// Handle Graph arrays.
-		if ( isset( $ld['@graph'] ) && is_array( $ld['@graph'] ) ) {
-			foreach ( $ld['@graph'] as $item ) {
-				if ( is_array( $item ) ) {
-					$this->extract_from_json_ld( $item, $extracted );
-				}
-			}
-			return;
-		}
-
-		$type = isset( $ld['@type'] ) ? $ld['@type'] : '';
-
-		// VideoObject.
-		if ( 'VideoObject' === $type ) {
-			if ( ! empty( $ld['contentUrl'] ) && empty( $extracted['video_url'] ) ) {
-				$extracted['video_url'] = $ld['contentUrl'];
-			}
-			if ( ! empty( $ld['thumbnailUrl'] ) && empty( $extracted['thumbnail_url'] ) ) {
-				$extracted['thumbnail_url'] = is_array( $ld['thumbnailUrl'] ) ? reset( $ld['thumbnailUrl'] ) : $ld['thumbnailUrl'];
-			}
-			if ( ! empty( $ld['name'] ) && empty( $extracted['title'] ) ) {
-				$extracted['title'] = $ld['name'];
-			}
-			if ( ! empty( $ld['duration'] ) && empty( $extracted['duration'] ) ) {
-				$extracted['duration'] = $this->format_duration( $ld['duration'] );
-			}
-		}
-
-		// ImageObject or general pin item.
-		if ( 'ImageObject' === $type || 'SocialMediaPosting' === $type || 'Article' === $type ) {
-			if ( ! empty( $ld['contentUrl'] ) && empty( $extracted['image_url'] ) ) {
-				$extracted['image_url'] = $ld['contentUrl'];
-			}
-			if ( ! empty( $ld['image'] ) && empty( $extracted['image_url'] ) ) {
-				$extracted['image_url'] = is_array( $ld['image'] ) ? ( isset( $ld['image']['url'] ) ? $ld['image']['url'] : reset( $ld['image'] ) ) : $ld['image'];
-			}
-			if ( ! empty( $ld['headline'] ) && empty( $extracted['title'] ) ) {
-				$extracted['title'] = $ld['headline'];
-			}
-			if ( ! empty( $ld['name'] ) && empty( $extracted['title'] ) ) {
-				$extracted['title'] = $ld['name'];
-			}
-		}
-	}
-
-	/**
-	 * Extracts data from OpenGraph, Twitter, and canonical HTML meta tags.
-	 *
-	 * @param string $html      HTML string.
-	 * @param array  $extracted Reference to extracted data array.
-	 */
-	private function extract_from_meta_tags( $html, array &$extracted ) {
-		// og:video or og:video:secure_url.
-		if ( empty( $extracted['video_url'] ) ) {
-			if ( preg_match( '/<meta[^>]*property=["\']og:video(?::secure_url)?["\'][^>]*content=["\']([^"\']+)["\']/i', $html, $m ) ||
-				 preg_match( '/<meta[^>]*content=["\']([^"\']+)["\'][^>]*property=["\']og:video(?::secure_url)?["\']/i', $html, $m ) ) {
-				$extracted['video_url'] = $m[1];
-			}
-		}
-
-		// og:image.
-		if ( empty( $extracted['image_url'] ) ) {
-			if ( preg_match( '/<meta[^>]*property=["\']og:image["\'][^>]*content=["\']([^"\']+)["\']/i', $html, $m ) ||
-				 preg_match( '/<meta[^>]*content=["\']([^"\']+)["\'][^>]*property=["\']og:image["\']/i', $html, $m ) ) {
-				$extracted['image_url'] = $m[1];
-			}
-		}
-
-		// Title: og:title or <title>.
-		if ( empty( $extracted['title'] ) ) {
-			if ( preg_match( '/<meta[^>]*property=["\']og:title["\'][^>]*content=["\']([^"\']+)["\']/i', $html, $m ) ||
-				 preg_match( '/<meta[^>]*name=["\']twitter:title["\'][^>]*content=["\']([^"\']+)["\']/i', $html, $m ) ) {
-				$extracted['title'] = $m[1];
-			} elseif ( preg_match( '/<title[^>]*>(.*?)<\/title>/is', $html, $m ) ) {
-				$extracted['title'] = $m[1];
-			}
-		}
-
-		// Video direct HTML tag fallback.
-		if ( empty( $extracted['video_url'] ) && preg_match( '/<video[^>]*src=["\']([^"\']+)["\']/i', $html, $m ) ) {
-			$extracted['video_url'] = $m[1];
-		}
 	}
 
 	/**
@@ -616,9 +777,8 @@ class PD_Pinterest_Provider implements PD_Provider_Interface {
 			return $url;
 		}
 
-		// Replace standard thumbnail size segments with originals if hosted on pinimg.com.
 		if ( false !== stripos( $url, 'pinimg.com' ) ) {
-			$upgraded = preg_replace( '/\/(236x|474x|564x|736x|1200x)\//i', '/originals/', $url );
+			$upgraded = preg_replace( '/\/(236x|474x|564x|736x|1200x|60x60)\//i', '/originals/', $url );
 			if ( $upgraded ) {
 				return $upgraded;
 			}
@@ -652,7 +812,7 @@ class PD_Pinterest_Provider implements PD_Provider_Interface {
 				// Likely milliseconds.
 				$secs = round( $secs / 1000 );
 			}
-			$mins = floor( $secs / 60 );
+			$mins     = floor( $secs / 60 );
 			$rem_secs = $secs % 60;
 			return sprintf( '%02d:%02d', $mins, $rem_secs );
 		}
@@ -671,29 +831,5 @@ class PD_Pinterest_Provider implements PD_Provider_Interface {
 		$title = preg_replace( '/\s*[\-\|•]\s*Pinterest\s*$/i', '', $title );
 		$title = preg_replace( '/^\s*Pinterest\s*[\-\|•]\s*/i', '', $title );
 		return trim( $title );
-	}
-
-	/**
-	 * Recursively searches a nested array for the first instance of a key.
-	 *
-	 * @param array  $array Array to search.
-	 * @param string $key   Key to locate.
-	 * @return mixed|null
-	 */
-	private function find_nested_key( array $array, $key ) {
-		if ( array_key_exists( $key, $array ) ) {
-			return $array[ $key ];
-		}
-
-		foreach ( $array as $val ) {
-			if ( is_array( $val ) ) {
-				$found = $this->find_nested_key( $val, $key );
-				if ( null !== $found ) {
-					return $found;
-				}
-			}
-		}
-
-		return null;
 	}
 }
