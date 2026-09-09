@@ -35,6 +35,7 @@ require_once PD_PLUGIN_DIR . 'includes/class-ajax.php';
 require_once PD_PLUGIN_DIR . 'includes/class-assets.php';
 require_once PD_PLUGIN_DIR . 'includes/class-shortcode.php';
 require_once PD_PLUGIN_DIR . 'includes/class-seo.php';
+require_once PD_PLUGIN_DIR . 'includes/class-settings.php';
 require_once PD_PLUGIN_DIR . 'includes/class-plugin.php';
 
 /**
