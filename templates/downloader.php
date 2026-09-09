@@ -228,23 +228,20 @@ if ( $is_gif ) {
 
   .pd-app .pd-terms-note a {
     color: rgba(255, 255, 255, 0.85) !important;
+    text-decoration: underline !important;
+  }
 
-  /* ── MOBILE RESPONSIVE ─────────────────────────────────────────────── */
+  /* Mobile button hidden by default on desktop */
+  .pd-app .pd-mobile-download-btn {
+    display: none !important;
+  }
+
+  /* ── MOBILE RESPONSIVE (TikSav style) ─────────────────────────── */
   @media (max-width: 640px) {
 
-    /* Hero edge-to-edge — no side margin/padding issue */
+    /* Hero: tighter padding on mobile */
     .pd-app .pd-hero {
       padding: 36px 20px 32px !important;
-      overflow: hidden !important;
-    }
-
-    /* Logo badge: smaller on mobile */
-    .pd-app .pd-logo-icon {
-      width: 32px !important;
-      height: 32px !important;
-    }
-    .pd-app .pd-logo-name {
-      font-size: 17px !important;
     }
 
     /* Input container full width */
@@ -252,24 +249,35 @@ if ( $is_gif ) {
       max-width: 100% !important;
     }
 
-    /* INPUT BOX: only field + Paste button (Download button moves below) */
-    .pd-app .pd-input-box {
-      border-radius: 14px !important;
-      padding: 4px !important;
+    /* Input icon hidden on mobile to save space */
+    .pd-app .pd-input-icon {
+      display: none !important;
     }
 
-    /* Hide Download button INSIDE input box on mobile */
+    /* Input field smaller text */
+    .pd-app .pd-input-field {
+      font-size: 15px !important;
+      padding: 12px 8px !important;
+    }
+
+    /* Paste button smaller */
+    .pd-app .pd-paste-btn {
+      padding: 11px 12px !important;
+      font-size: 13px !important;
+    }
+
+    /* HIDE desktop Download button inside input row */
     .pd-app .pd-input-box .pd-btn-primary {
       display: none !important;
     }
 
-    /* Show full-width Download button BELOW input on mobile */
+    /* SHOW full-width Download button below input (TikSav style) */
     .pd-app .pd-mobile-download-btn {
       display: flex !important;
       width: 100% !important;
       justify-content: center !important;
       align-items: center !important;
-      gap: 8px !important;
+      gap: 10px !important;
       background: #2563eb !important;
       color: #ffffff !important;
       border: none !important;
@@ -280,7 +288,6 @@ if ( $is_gif ) {
       cursor: pointer !important;
       margin-top: 10px !important;
       box-shadow: 0 4px 14px rgba(37,99,235,0.4) !important;
-      text-decoration: none !important;
       font-family: 'Inter', sans-serif !important;
       transition: background 0.18s !important;
     }
@@ -289,24 +296,12 @@ if ( $is_gif ) {
     }
   }
 
-  /* On desktop: hide the mobile-only button */
-  @media (min-width: 641px) {
-    .pd-app .pd-mobile-download-btn {
-      display: none !important;
-    }
-  }
-    text-decoration: underline !important;
-  }
-
   /* ── Mobile Form Layout ────────────────────────────────────────── */
   @media (max-width: 600px) {
     .pd-app .pd-input-box {
       flex-wrap: wrap !important;
       gap: 10px !important;
       padding: 12px !important;
-    }
-    .pd-app .pd-input-icon {
-      display: none !important;
     }
     .pd-app .pd-input-field {
       width: 100% !important;
@@ -886,18 +881,6 @@ if ( $is_gif ) {
 		<!-- ── Hero Section (Styled for WordPress) ───────────────────── -->
 		<section class="pd-hero" aria-labelledby="pd-hero-heading">
 			<div class="pd-hero__container">
-
-				<!-- Logo Badge — TikSav style icon + site name -->
-				<div class="pd-logo-badge">
-					<img
-						src="<?php echo esc_url( PD_PLUGIN_URL . 'public/images/logo.png' ); ?>"
-						alt="PinDownloady logo"
-						class="pd-logo-icon"
-						width="40"
-						height="40"
-					/>
-					<span class="pd-logo-name">PinDownloady</span>
-				</div>
 
 				<h1 class="pd-hero__title" id="pd-hero-heading">
 					<?php echo $hero_title; ?>
