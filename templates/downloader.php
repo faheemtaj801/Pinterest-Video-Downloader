@@ -237,12 +237,56 @@ if ( $is_gif ) {
     }
   }
 
-  /* ── States ────────────────────────────────────────────────────── */
+  /* ── States ─────────────────────────────────────────────────────── */
+  /* Input is always visible — only result/error/loading are state-driven */
   .pd-app .pd-state {
     display: none !important;
   }
   .pd-app .pd-state.is-active {
     display: block !important;
+  }
+
+  /* Loading bar — shown below input, not replacing it */
+  .pd-app .pd-loading-bar {
+    margin-top: 14px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 10px !important;
+    padding: 10px 0 0 0 !important;
+  }
+
+  .pd-app .pd-loading-bar .pd-dot-loader {
+    display: flex !important;
+    gap: 7px !important;
+  }
+
+  .pd-app .pd-loading-bar .pd-dot-loader span {
+    width: 9px !important;
+    height: 9px !important;
+    border-radius: 50% !important;
+    background: rgba(255,255,255,0.85) !important;
+    animation: pdPulse 1.3s ease-in-out infinite !important;
+    display: inline-block !important;
+  }
+  .pd-app .pd-loading-bar .pd-dot-loader span:nth-child(2) { animation-delay: 0.18s !important; }
+  .pd-app .pd-loading-bar .pd-dot-loader span:nth-child(3) { animation-delay: 0.36s !important; }
+
+  .pd-app .pd-loading-bar .pd-loading-text {
+    color: rgba(255,255,255,0.8) !important;
+    font-size: 13px !important;
+    margin: 0 !important;
+  }
+
+  /* Input disabled state during loading */
+  .pd-app .pd-input-field:disabled {
+    opacity: 0.65 !important;
+    cursor: not-allowed !important;
+  }
+  .pd-app .pd-btn-primary:disabled {
+    opacity: 0.65 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
   }
 
   /* Loading State */
@@ -766,32 +810,32 @@ if ( $is_gif ) {
 					<?php echo $hero_subtitle; ?>
 				</p>
 
-				<!-- States live inside the hero (input / loading) -->
-				<div id="pd-hero-states">
+				<!-- Input form — ALWAYS VISIBLE, never hidden by state machine -->
+				<div id="pd-input-section">
+					<?php include PD_PLUGIN_DIR . 'templates/input.php'; ?>
+				</div>
 
-					<!-- State: Input -->
-					<div class="pd-state pd-state--input is-active" id="pd-state-input">
-						<?php include PD_PLUGIN_DIR . 'templates/input.php'; ?>
+				<!-- Loading indicator — compact, shown below input during fetch -->
+				<div id="pd-state-loading" class="pd-state" role="status" aria-live="polite" aria-hidden="true">
+					<div class="pd-loading-bar">
+						<div class="pd-dot-loader" aria-hidden="true">
+							<span></span><span></span><span></span>
+						</div>
+						<p class="pd-loading-text"><?php esc_html_e( 'Fetching media info…', 'pinterest-downloader' ); ?></p>
 					</div>
-
-					<!-- State: Loading -->
-					<div class="pd-state pd-state--loading" id="pd-state-loading" aria-live="polite" aria-hidden="true">
-						<?php include PD_PLUGIN_DIR . 'templates/loading.php'; ?>
-					</div>
-
 				</div>
 
 			</div>
 		</section>
 
-		<!-- ── Result State (White Card) ─────────────────────────── -->
+		<!-- ── Result Card — shows below hero, persists for new downloads ── -->
 		<div class="pd-result-outer">
 			<div class="pd-state pd-state--result" id="pd-state-result" aria-live="polite" aria-hidden="true">
 				<?php include PD_PLUGIN_DIR . 'templates/result.php'; ?>
 			</div>
 		</div>
 
-		<!-- ── Error State ────────────────────────────────────────── -->
+		<!-- ── Error Card — shows below hero ────────────────────────────── -->
 		<div class="pd-error-outer">
 			<div class="pd-state pd-state--error" id="pd-state-error" aria-live="assertive" aria-hidden="true">
 				<?php include PD_PLUGIN_DIR . 'templates/error.php'; ?>

@@ -104,11 +104,13 @@
   const inputError       = wrapper.querySelector( '#pd-input-error' );
   const errorText        = wrapper.querySelector( '#pd-error-text' );
 
-  // State containers
-  const stateInput   = wrapper.querySelector( '#pd-state-input' );
+  // State containers (input is NOT in this list — it's always visible)
   const stateLoading = wrapper.querySelector( '#pd-state-loading' );
   const stateResult  = wrapper.querySelector( '#pd-state-result' );
   const stateError   = wrapper.querySelector( '#pd-state-error' );
+
+  // Input form elements (always in DOM, never hidden)
+  const inputSection = wrapper.querySelector( '#pd-input-section' );
 
   // Result card elements (TikSav Style)
   const resultThumbnail    = wrapper.querySelector( '#pd-result-thumbnail' );
@@ -149,21 +151,23 @@
 
   /**
    * Transitions the UI to the given state.
+   * Input box is ALWAYS visible — only loading/result/error toggle.
    *
    * @param {'idle'|'loading'|'result'|'error'} state
    */
   function setState( state ) {
     currentState = state;
 
-    // Hide all state containers
-    [ stateInput, stateLoading, stateResult, stateError ].forEach( function ( el ) {
+    const isLoading = ( 'loading' === state );
+
+    // Toggle state panels (input stays visible always)
+    [ stateLoading, stateResult, stateError ].forEach( function ( el ) {
       if ( ! el ) return;
       el.classList.remove( 'is-active' );
       el.setAttribute( 'aria-hidden', 'true' );
     } );
 
     const map = {
-      idle:    stateInput,
       loading: stateLoading,
       result:  stateResult,
       error:   stateError,
@@ -175,17 +179,32 @@
       target.removeAttribute( 'aria-hidden' );
     }
 
-    // Side effects per state
-    if ( state === 'idle' ) {
+    // Disable / enable form inputs during loading
+    const urlInput = wrapper.querySelector( '#pd-url-input' );
+    const dlBtn    = wrapper.querySelector( '#pd-download-btn' );
+    const pasteBtn = wrapper.querySelector( '#pd-paste-btn' );
+
+    if ( urlInput ) urlInput.disabled  = isLoading;
+    if ( dlBtn )    dlBtn.disabled     = isLoading || ! getInputValue();
+    if ( pasteBtn ) pasteBtn.disabled  = isLoading;
+
+    // On idle: clear old result/error, clear input
+    if ( 'idle' === state ) {
       clearInput();
-      // Scroll back to top of plugin
-      wrapper && wrapper.scrollIntoView( { behavior: 'smooth', block: 'start' } );
     }
-    // When result shows, scroll to result card
-    if ( state === 'result' && stateResult ) {
-      setTimeout( function() {
-        stateResult.scrollIntoView( { behavior: 'smooth', block: 'start' } );
-      }, 100 );
+
+    // Scroll result into view when it appears
+    if ( 'result' === state && stateResult ) {
+      setTimeout( function () {
+        stateResult.scrollIntoView( { behavior: 'smooth', block: 'nearest' } );
+      }, 120 );
+    }
+
+    // Scroll error into view when it appears
+    if ( 'error' === state && stateError ) {
+      setTimeout( function () {
+        stateError.scrollIntoView( { behavior: 'smooth', block: 'nearest' } );
+      }, 80 );
     }
   }
 
@@ -217,15 +236,14 @@
   // ─── Input Helpers ────────────────────────────────────────────────────────
 
   function syncButtonState() {
-    const val = getInputValue();
+    const val      = getInputValue();
     const hasValue = val.length > 0;
-    if ( downloadBtnDesk ) {
-      downloadBtnDesk.disabled = ! hasValue;
-      downloadBtnDesk.setAttribute( 'aria-disabled', hasValue ? 'false' : 'true' );
-    }
-    if ( downloadBtnMob ) {
-      downloadBtnMob.disabled = ! hasValue;
-      downloadBtnMob.setAttribute( 'aria-disabled', hasValue ? 'false' : 'true' );
+    const loading  = ( 'loading' === currentState );
+
+    const dlBtn = wrapper.querySelector( '#pd-download-btn' );
+    if ( dlBtn ) {
+      dlBtn.disabled = loading || ! hasValue;
+      dlBtn.setAttribute( 'aria-disabled', ( loading || ! hasValue ) ? 'true' : 'false' );
     }
   }
 
@@ -500,7 +518,7 @@
     pasteBtnMob.addEventListener( 'click', handlePaste );
   }
 
-  // ─── Try Again / Reset Buttons ────────────────────────────────────────────
+  // ─── Try Again / Reset Buttons ────────────────────────────────────────────────────
 
   wrapper.addEventListener( 'click', function ( e ) {
     const btn = e.target.closest( '[data-pd-reset]' );
@@ -508,7 +526,14 @@
       if ( activeAbortController ) {
         activeAbortController.abort();
       }
-      setState( 'idle' );
+      // Hide result/error panels only — input stays visible
+      [ stateResult, stateError, stateLoading ].forEach( function ( el ) {
+        if ( ! el ) return;
+        el.classList.remove( 'is-active' );
+        el.setAttribute( 'aria-hidden', 'true' );
+      } );
+      clearInput();
+      currentState = 'idle';
     }
   } );
 
@@ -539,9 +564,10 @@
     } );
   } );
 
-  // ─── Initialise ───────────────────────────────────────────────────────────
+  // ─── Initialise ─────────────────────────────────────────────────────────
 
+  // Input is always visible — just sync button state on load
   syncButtonState();
-  setState( 'idle' );
+  currentState = 'idle';
 
 } )();
