@@ -100,9 +100,9 @@ if ( $is_gif ) {
   .pd-app .pd-hero__title {
     color: #ffffff !important;
     font-family: 'Inter', sans-serif !important;
-    font-size: clamp(22px, 4.5vw, 38px) !important;
+    font-size: clamp(26px, 5vw, 42px) !important;
     font-weight: 800 !important;
-    line-height: 1.2 !important;
+    line-height: 1.15 !important;
     letter-spacing: -0.025em !important;
     margin: 0 0 16px 0 !important;
     text-align: center !important;
@@ -111,11 +111,11 @@ if ( $is_gif ) {
   .pd-app .pd-hero__subtitle {
     color: rgba(255, 255, 255, 0.88) !important;
     font-family: 'Inter', sans-serif !important;
-    font-size: clamp(15px, 2.2vw, 17px) !important;
+    font-size: clamp(14px, 2.2vw, 17px) !important;
     font-weight: 400 !important;
-    line-height: 1.6 !important;
-    max-width: 620px !important;
-    margin: 0 auto 30px auto !important;
+    line-height: 1.65 !important;
+    max-width: 600px !important;
+    margin: 0 auto 28px auto !important;
     text-align: center !important;
   }
 
@@ -228,6 +228,73 @@ if ( $is_gif ) {
 
   .pd-app .pd-terms-note a {
     color: rgba(255, 255, 255, 0.85) !important;
+
+  /* ── MOBILE RESPONSIVE ─────────────────────────────────────────────── */
+  @media (max-width: 640px) {
+
+    /* Hero edge-to-edge — no side margin/padding issue */
+    .pd-app .pd-hero {
+      padding: 36px 20px 32px !important;
+      overflow: hidden !important;
+    }
+
+    /* Logo badge: smaller on mobile */
+    .pd-app .pd-logo-icon {
+      width: 32px !important;
+      height: 32px !important;
+    }
+    .pd-app .pd-logo-name {
+      font-size: 17px !important;
+    }
+
+    /* Input container full width */
+    .pd-app .pd-input-container {
+      max-width: 100% !important;
+    }
+
+    /* INPUT BOX: only field + Paste button (Download button moves below) */
+    .pd-app .pd-input-box {
+      border-radius: 14px !important;
+      padding: 4px !important;
+    }
+
+    /* Hide Download button INSIDE input box on mobile */
+    .pd-app .pd-input-box .pd-btn-primary {
+      display: none !important;
+    }
+
+    /* Show full-width Download button BELOW input on mobile */
+    .pd-app .pd-mobile-download-btn {
+      display: flex !important;
+      width: 100% !important;
+      justify-content: center !important;
+      align-items: center !important;
+      gap: 8px !important;
+      background: #2563eb !important;
+      color: #ffffff !important;
+      border: none !important;
+      border-radius: 14px !important;
+      padding: 16px !important;
+      font-size: 17px !important;
+      font-weight: 700 !important;
+      cursor: pointer !important;
+      margin-top: 10px !important;
+      box-shadow: 0 4px 14px rgba(37,99,235,0.4) !important;
+      text-decoration: none !important;
+      font-family: 'Inter', sans-serif !important;
+      transition: background 0.18s !important;
+    }
+    .pd-app .pd-mobile-download-btn:active {
+      background: #1d4ed8 !important;
+    }
+  }
+
+  /* On desktop: hide the mobile-only button */
+  @media (min-width: 641px) {
+    .pd-app .pd-mobile-download-btn {
+      display: none !important;
+    }
+  }
     text-decoration: underline !important;
   }
 

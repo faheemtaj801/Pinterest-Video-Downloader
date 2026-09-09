@@ -98,7 +98,7 @@
   const urlInputDesktop  = wrapper.querySelector( '#pd-url-input' );
   const urlInputMobile   = wrapper.querySelector( '#pd-url-input-mobile' );
   const downloadBtnDesk  = wrapper.querySelector( '#pd-download-btn' );
-  const downloadBtnMob   = wrapper.querySelector( '#pd-download-btn-mobile' );
+  const downloadBtnMob   = wrapper.querySelector( '#pd-mobile-download-btn' );
   const pasteBtnDesk     = wrapper.querySelector( '#pd-paste-btn' );
   const pasteBtnMob      = wrapper.querySelector( '#pd-paste-btn-mobile' );
   const inputError       = wrapper.querySelector( '#pd-input-error' );

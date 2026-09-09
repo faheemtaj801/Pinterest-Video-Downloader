@@ -1,12 +1,14 @@
 <?php
 /**
- * Input state template — 100% Unified Responsive Input Form.
- * Fully compatible with all devices (Mobile, Tablet, Desktop) without duplicate elements.
+ * Input template — TikSav-style layout.
+ * Desktop: [Link field] [Paste] [Download] — all in one row.
+ * Mobile:  [Link field] [Paste] on top row, [Download] full-width below.
  *
  * @package Pinterest_Downloader
  */
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
+$terms_url   = PD_Settings::get( 'terms_url' ) ?: '/terms-of-service/';
 $placeholder = esc_attr__( 'Paste Pinterest link here...', 'pinterest-downloader' );
 $btn_label   = esc_html__( 'Download', 'pinterest-downloader' );
 if ( 'gif' === $type ) {
@@ -18,6 +20,7 @@ if ( 'gif' === $type ) {
 <div class="pd-input-container">
 	<form id="pd-download-form" role="search" aria-label="<?php esc_attr_e( 'Pinterest downloader', 'pinterest-downloader' ); ?>" novalidate>
 
+		<!-- Input row: field + Paste + Download (Download hidden on mobile via CSS) -->
 		<div class="pd-input-box">
 			<div class="pd-input-icon" aria-hidden="true">
 				<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -47,6 +50,7 @@ if ( 'gif' === $type ) {
 					<span><?php esc_html_e( 'Paste', 'pinterest-downloader' ); ?></span>
 				</button>
 
+				<!-- Desktop Download button (hidden on mobile, shown via CSS) -->
 				<button type="submit" id="pd-download-btn" class="pd-btn-primary" aria-label="<?php echo esc_attr( $btn_label ); ?>">
 					<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 11l5 5 5-5M12 4v12"/>
@@ -56,9 +60,17 @@ if ( 'gif' === $type ) {
 			</div>
 		</div>
 
+		<!-- Mobile-only full-width Download button (shown via CSS on ≤640px) -->
+		<button type="submit" id="pd-mobile-download-btn" class="pd-mobile-download-btn" aria-label="<?php echo esc_attr( $btn_label ); ?>">
+			<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+				<path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 11l5 5 5-5M12 4v12"/>
+			</svg>
+			<span><?php echo $btn_label; ?></span>
+		</button>
+
 		<p class="pd-terms-note">
 			<?php esc_html_e( 'By using our service you accept our', 'pinterest-downloader' ); ?>
-			<a href="/terms-of-service/"><?php esc_html_e( 'Terms of Service', 'pinterest-downloader' ); ?></a>.
+			<a href="<?php echo esc_url( $terms_url ); ?>"><?php esc_html_e( 'Terms of Service', 'pinterest-downloader' ); ?></a>.
 		</p>
 
 	</form>
