@@ -33,42 +33,41 @@ if ( $is_gif ) {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
     color: #1a1f36 !important;
     width: 100% !important;
-    max-width: 1140px !important;
+    max-width: 100% !important;
     margin: 0 auto !important;
     line-height: 1.6 !important;
     -webkit-font-smoothing: antialiased !important;
   }
 
+  /* Pull plugin upward to cancel WordPress theme's content-area top padding */
+  .entry-content .pd-app,
+  .wp-block-post-content .pd-app,
+  .site-content .pd-app,
+  article .pd-app {
+    margin-top: -2em !important;
+  }
+
   /* ── Hero Box ──────────────────────────────────────────────────── */
   .pd-app .pd-hero {
     background: linear-gradient(160deg, #1a3fd4 0%, #2152e8 40%, #1e45d6 70%, #1535b8 100%) !important;
-    border-radius: 24px !important;
-    padding: clamp(32px, 5vw, 60px) clamp(16px, 4vw, 32px) !important;
+    border-radius: 0 !important;
+    padding: clamp(40px, 6vw, 72px) clamp(16px, 5vw, 80px) !important;
     text-align: center !important;
     color: #ffffff !important;
-    box-shadow: 0 12px 36px rgba(26, 63, 212, 0.25) !important;
-    margin: 12px 0 32px 0 !important;
+    width: 100vw !important;
+    position: relative !important;
+    left: 50% !important;
+    right: 50% !important;
+    margin-left: -50vw !important;
+    margin-right: -50vw !important;
+    margin-bottom: 32px !important;
   }
 
-  .pd-app .pd-brand-badge {
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 8px !important;
-    background: rgba(255, 255, 255, 0.15) !important;
-    backdrop-filter: blur(10px) !important;
-    -webkit-backdrop-filter: blur(10px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.25) !important;
-    padding: 6px 16px !important;
-    border-radius: 9999px !important;
-    color: #ffffff !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-    margin-bottom: 18px !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
-  }
-
-  .pd-app .pd-brand-badge span span {
-    color: #93c5fd !important;
+  /* Center the content inside the full-width hero */
+  .pd-app .pd-hero__container {
+    max-width: 860px !important;
+    margin: 0 auto !important;
+    padding: 0 20px !important;
   }
 
   .pd-app .pd-hero__title {
@@ -793,14 +792,6 @@ if ( $is_gif ) {
 		<!-- ── Hero Section (Styled for WordPress) ───────────────────── -->
 		<section class="pd-hero" aria-labelledby="pd-hero-heading">
 			<div class="pd-hero__container">
-
-				<!-- Brand Pill Badge -->
-				<div class="pd-brand-badge" aria-hidden="true">
-					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 11l5 5 5-5M12 4v12"/>
-					</svg>
-					<span>Pin<span>Downloady</span></span>
-				</div>
 
 				<h1 class="pd-hero__title" id="pd-hero-heading">
 					<?php echo $hero_title; ?>
