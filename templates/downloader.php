@@ -70,6 +70,33 @@ if ( $is_gif ) {
     padding: 0 20px !important;
   }
 
+  /* ── Logo Badge (TikSav style) ─────────────────────────────── */
+  .pd-app .pd-logo-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    margin-bottom: 22px !important;
+    text-decoration: none !important;
+  }
+
+  .pd-app .pd-logo-icon {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 10px !important;
+    object-fit: cover !important;
+    display: block !important;
+    flex-shrink: 0 !important;
+  }
+
+  .pd-app .pd-logo-name {
+    font-size: 20px !important;
+    font-weight: 800 !important;
+    color: #ffffff !important;
+    font-family: 'Inter', sans-serif !important;
+    letter-spacing: -0.02em !important;
+    line-height: 1 !important;
+  }
+
   .pd-app .pd-hero__title {
     color: #ffffff !important;
     font-family: 'Inter', sans-serif !important;
@@ -792,6 +819,18 @@ if ( $is_gif ) {
 		<!-- ── Hero Section (Styled for WordPress) ───────────────────── -->
 		<section class="pd-hero" aria-labelledby="pd-hero-heading">
 			<div class="pd-hero__container">
+
+				<!-- Logo Badge — TikSav style icon + site name -->
+				<div class="pd-logo-badge">
+					<img
+						src="<?php echo esc_url( PD_PLUGIN_URL . 'public/images/logo.png' ); ?>"
+						alt="PinDownloady logo"
+						class="pd-logo-icon"
+						width="40"
+						height="40"
+					/>
+					<span class="pd-logo-name">PinDownloady</span>
+				</div>
 
 				<h1 class="pd-hero__title" id="pd-hero-heading">
 					<?php echo $hero_title; ?>
