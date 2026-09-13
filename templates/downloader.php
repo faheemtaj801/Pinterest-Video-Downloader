@@ -44,7 +44,7 @@ if ( $is_gif ) {
   .wp-block-post-content .pd-app,
   .site-content .pd-app,
   article .pd-app {
-    margin-top: -2em !important;
+    margin-top: -4em !important;
   }
 
   /* Page ka overall top padding/margin kam karna */
@@ -53,14 +53,20 @@ if ( $is_gif ) {
   .wp-block-post-content {
     padding-top: 0 !important;
     margin-top: 0 !important;
+    padding-bottom: 0 !important;
   }
 
-  /* Header aur hero ke beech ka gap */
+  /* Header aur hero ke beech ka gap — zero */
   main,
   #main,
-  .site-main {
+  .site-main,
+  .site-content,
+  #content,
+  .hentry,
+  article.page {
     padding-top: 0 !important;
     margin-top: 0 !important;
+    padding-bottom: 0 !important;
   }
 
   /* ── Header Logo & Site Branding Alignment (Fix 1) ─────────────── */
@@ -83,7 +89,7 @@ if ( $is_gif ) {
     object-fit: contain !important;
   }
 
-  /* ── Hero Box (Compact spacing TikSav style) ───────────────────── */
+  /* ── Hero Box (Ultra-compact — 1 line gap only) ─────────────────── */
   .pd-app .pd-hero,
   .pd-hero,
   .pin-hero,
@@ -95,8 +101,8 @@ if ( $is_gif ) {
   [class*="pd-hero"],
   [class*="pin-hero"],
   [class*="hero"] {
-    padding-top: 40px !important;
-    padding-bottom: 40px !important;
+    padding-top: 20px !important;
+    padding-bottom: 20px !important;
     min-height: unset !important;
   }
 
@@ -121,7 +127,7 @@ if ( $is_gif ) {
     right: 50% !important;
     margin-left: -50vw !important;
     margin-right: -50vw !important;
-    margin-bottom: 20px !important;
+    margin-bottom: 0 !important;
   }
 
   /* Center the content inside the full-width hero */
@@ -136,7 +142,7 @@ if ( $is_gif ) {
     display: inline-flex !important;
     align-items: center !important;
     gap: 10px !important;
-    margin-bottom: 22px !important;
+    margin-bottom: 8px !important;
     text-decoration: none !important;
   }
 
@@ -161,22 +167,22 @@ if ( $is_gif ) {
   .pd-app .pd-hero__title {
     color: #ffffff !important;
     font-family: 'Inter', sans-serif !important;
-    font-size: clamp(26px, 5vw, 42px) !important;
+    font-size: clamp(22px, 4vw, 36px) !important;
     font-weight: 800 !important;
     line-height: 1.15 !important;
     letter-spacing: -0.025em !important;
-    margin: 0 0 14px 0 !important;
+    margin: 0 0 6px 0 !important;
     text-align: center !important;
   }
 
   .pd-app .pd-hero__subtitle {
     color: rgba(255, 255, 255, 0.88) !important;
     font-family: 'Inter', sans-serif !important;
-    font-size: clamp(14px, 2.2vw, 17px) !important;
+    font-size: clamp(13px, 2vw, 15px) !important;
     font-weight: 400 !important;
-    line-height: 1.6 !important;
+    line-height: 1.5 !important;
     max-width: 600px !important;
-    margin: 0 auto 20px auto !important;
+    margin: 0 auto 12px auto !important;
     text-align: center !important;
   }
 
@@ -281,7 +287,7 @@ if ( $is_gif ) {
   }
 
   .pd-app .pd-terms-note {
-    margin-top: 14px !important;
+    margin-top: 8px !important;
     font-size: 13px !important;
     color: rgba(255, 255, 255, 0.65) !important;
     text-align: center !important;
@@ -302,7 +308,7 @@ if ( $is_gif ) {
 
     /* Hero: tighter padding on mobile */
     .pd-app .pd-hero {
-      padding: 32px 16px 28px !important;
+      padding: 16px 16px 16px !important;
     }
 
     /* Input container full width */
@@ -475,7 +481,7 @@ if ( $is_gif ) {
   /* ── Result Card ───────────────────────────────────────────────── */
   .pd-app .pd-result-outer {
     max-width: 680px !important;
-    margin: 0 auto 40px auto !important;
+    margin: 0 auto 16px auto !important;
   }
 
   .pd-app .pd-result-card {

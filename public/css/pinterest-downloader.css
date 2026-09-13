@@ -141,22 +141,28 @@
   object-fit: contain !important;
 }
 
-/* ── Page & Header Gap Overrides (WordPress Themes) ─────────────── */
+/* ── Page & Header Gap Overrides (WordPress Themes) ────────────────── */
 .entry-content,
 .page-content,
 .wp-block-post-content {
   padding-top: 0 !important;
   margin-top: 0 !important;
+  padding-bottom: 0 !important;
 }
 
 main,
 #main,
-.site-main {
+.site-main,
+.site-content,
+#content,
+.hentry,
+article.page {
   padding-top: 0 !important;
   margin-top: 0 !important;
+  padding-bottom: 0 !important;
 }
 
-/* ── Hero — full royal-blue gradient (Fix 2: Compact TikSav Spacing) ── */
+/* ── Hero — full royal-blue gradient (Ultra-compact spacing) ────────── */
 .pd-hero,
 .pin-hero,
 .plugin-wrapper,
@@ -167,8 +173,8 @@ main,
 [class*="pd-hero"],
 [class*="pin-hero"],
 [class*="hero"] {
-  padding-top: 40px !important;
-  padding-bottom: 40px !important;
+  padding-top: 20px !important;
+  padding-bottom: 20px !important;
   min-height: unset !important;
 }
 
@@ -182,13 +188,13 @@ main,
 
 .pd-hero {
   background: linear-gradient(160deg, #1a3fd4 0%, #2152e8 35%, #1e45d6 65%, #1535b8 100%);
-  padding: 40px 16px !important;
+  padding: 20px 16px !important;
   text-align: center;
 }
 
 @media (min-width: 640px) {
   .pd-hero {
-    padding: 40px 16px !important;
+    padding: 20px 16px !important;
   }
 }
 
@@ -199,22 +205,22 @@ main,
 
 .pd-hero__title {
   font-family: 'Inter', sans-serif;
-  font-size: clamp(1.8rem, 5vw, 3.5rem);
+  font-size: clamp(1.5rem, 4vw, 2.8rem);
   font-weight: 800;
   color: #ffffff;
   line-height: 1.15;
   letter-spacing: -0.025em;
-  margin-bottom: 14px;
+  margin-bottom: 6px;
 }
 
 .pd-hero__subtitle {
   font-family: 'Inter', sans-serif;
-  font-size: clamp(1rem, 2.5vw, 1.25rem);
+  font-size: clamp(0.875rem, 2vw, 1rem);
   font-weight: 500;
   color: rgba(255,255,255,0.80);
   max-width: 576px;
-  margin: 0 auto 20px;
-  line-height: 1.6;
+  margin: 0 auto 12px;
+  line-height: 1.5;
 }
 
 /* ── State system ──────────────────────────────────────────────────── */
