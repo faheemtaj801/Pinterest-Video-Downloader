@@ -47,6 +47,22 @@ if ( $is_gif ) {
     margin-top: -2em !important;
   }
 
+  /* Page ka overall top padding/margin kam karna */
+  .entry-content,
+  .page-content,
+  .wp-block-post-content {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+  }
+
+  /* Header aur hero ke beech ka gap */
+  main,
+  #main,
+  .site-main {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+  }
+
   /* ── Header Logo & Site Branding Alignment (Fix 1) ─────────────── */
   .site-branding,
   .site-header .site-branding,
@@ -67,14 +83,29 @@ if ( $is_gif ) {
     object-fit: contain !important;
   }
 
-  /* ── Hero Box (Fix 2: Compact 40px padding TikSav style) ───────── */
+  /* ── Hero Box (Compact spacing TikSav style) ───────────────────── */
   .pd-app .pd-hero,
   .pd-hero,
+  .pin-hero,
+  .plugin-wrapper,
+  .downloader-hero,
+  .hero-section,
   .pin-downloader-hero,
   .plugin-hero,
+  [class*="pd-hero"],
+  [class*="pin-hero"],
   [class*="hero"] {
     padding-top: 40px !important;
     padding-bottom: 40px !important;
+    min-height: unset !important;
+  }
+
+  /* Agar hero section ke andar content wrapper hai */
+  .pd-hero > *,
+  .pin-hero > *,
+  [class*="hero"] > * {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
   }
 
   .pd-app .pd-hero {

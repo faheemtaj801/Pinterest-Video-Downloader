@@ -141,13 +141,43 @@
   object-fit: contain !important;
 }
 
+/* ── Page & Header Gap Overrides (WordPress Themes) ─────────────── */
+.entry-content,
+.page-content,
+.wp-block-post-content {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+
+main,
+#main,
+.site-main {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+
 /* ── Hero — full royal-blue gradient (Fix 2: Compact TikSav Spacing) ── */
 .pd-hero,
+.pin-hero,
+.plugin-wrapper,
+.downloader-hero,
+.hero-section,
 .pin-downloader-hero,
 .plugin-hero,
+[class*="pd-hero"],
+[class*="pin-hero"],
 [class*="hero"] {
   padding-top: 40px !important;
   padding-bottom: 40px !important;
+  min-height: unset !important;
+}
+
+/* Agar hero section ke andar content wrapper hai */
+.pd-hero > *,
+.pin-hero > *,
+[class*="hero"] > * {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
 }
 
 .pd-hero {
