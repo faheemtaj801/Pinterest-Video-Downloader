@@ -47,11 +47,41 @@ if ( $is_gif ) {
     margin-top: -2em !important;
   }
 
-  /* ── Hero Box ──────────────────────────────────────────────────── */
+  /* ── Header Logo & Site Branding Alignment (Fix 1) ─────────────── */
+  .site-branding,
+  .site-header .site-branding,
+  .navbar-brand,
+  .site-logo {
+    display: flex !important;
+    align-items: center !important;
+  }
+
+  .site-logo img,
+  .custom-logo,
+  .custom-logo-link img,
+  .site-branding img {
+    height: 40px !important;
+    width: 40px !important;
+    margin-right: 8px !important;
+    vertical-align: middle !important;
+    object-fit: contain !important;
+  }
+
+  /* ── Hero Box (Fix 2: Compact 40px padding TikSav style) ───────── */
+  .pd-app .pd-hero,
+  .pd-hero,
+  .pin-downloader-hero,
+  .plugin-hero,
+  [class*="hero"] {
+    padding-top: 40px !important;
+    padding-bottom: 40px !important;
+  }
+
   .pd-app .pd-hero {
     background: linear-gradient(160deg, #1a3fd4 0%, #2152e8 40%, #1e45d6 70%, #1535b8 100%) !important;
     border-radius: 0 !important;
-    padding: clamp(40px, 6vw, 72px) clamp(16px, 5vw, 80px) !important;
+    padding-left: clamp(16px, 5vw, 80px) !important;
+    padding-right: clamp(16px, 5vw, 80px) !important;
     text-align: center !important;
     color: #ffffff !important;
     width: 100vw !important;
@@ -60,7 +90,7 @@ if ( $is_gif ) {
     right: 50% !important;
     margin-left: -50vw !important;
     margin-right: -50vw !important;
-    margin-bottom: 32px !important;
+    margin-bottom: 20px !important;
   }
 
   /* Center the content inside the full-width hero */
@@ -104,7 +134,7 @@ if ( $is_gif ) {
     font-weight: 800 !important;
     line-height: 1.15 !important;
     letter-spacing: -0.025em !important;
-    margin: 0 0 16px 0 !important;
+    margin: 0 0 14px 0 !important;
     text-align: center !important;
   }
 
@@ -113,9 +143,9 @@ if ( $is_gif ) {
     font-family: 'Inter', sans-serif !important;
     font-size: clamp(14px, 2.2vw, 17px) !important;
     font-weight: 400 !important;
-    line-height: 1.65 !important;
+    line-height: 1.6 !important;
     max-width: 600px !important;
-    margin: 0 auto 28px auto !important;
+    margin: 0 auto 20px auto !important;
     text-align: center !important;
   }
 
@@ -241,7 +271,7 @@ if ( $is_gif ) {
 
     /* Hero: tighter padding on mobile */
     .pd-app .pd-hero {
-      padding: 36px 20px 32px !important;
+      padding: 32px 16px 28px !important;
     }
 
     /* Input container full width */
@@ -494,6 +524,13 @@ if ( $is_gif ) {
     background: #eff6ff !important;
     color: #1d4ed8 !important;
     border: 1px solid #bfdbfe !important;
+  }
+
+  .pd-app .pd-badge--duration {
+    background: #eff6ff !important;
+    color: #1d4ed8 !important;
+    border: 1px solid #bfdbfe !important;
+    font-weight: 700 !important;
   }
 
   .pd-app .pd-divider {

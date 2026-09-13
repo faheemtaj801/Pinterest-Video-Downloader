@@ -7,6 +7,33 @@
  * @package Pinterest_Downloader
  */
 if ( ! defined( 'ABSPATH' ) ) { exit; }
+
+$type_mode   = isset( $type ) ? sanitize_key( $type ) : 'video';
+$is_img_page = ( 'image' === $type_mode );
+$is_gif_page = ( 'gif' === $type_mode );
+
+// Set default titles and subtitles according to active page type (Fix 3).
+if ( $is_img_page ) {
+	$btn1_title    = esc_html__( 'Download Image', 'pinterest-downloader' );
+	$btn1_sub      = esc_html__( 'Full resolution · Original quality', 'pinterest-downloader' );
+	$btn2_title    = esc_html__( 'HD Version', 'pinterest-downloader' );
+	$btn2_sub      = esc_html__( 'Highest resolution available', 'pinterest-downloader' );
+	$reset_label   = esc_html__( 'Download another image', 'pinterest-downloader' );
+} elseif ( $is_gif_page ) {
+	$btn1_title    = esc_html__( 'Download GIF', 'pinterest-downloader' );
+	$btn1_sub      = esc_html__( 'Animated · Original format', 'pinterest-downloader' );
+	$btn2_title    = esc_html__( 'Download MP4 Loop', 'pinterest-downloader' );
+	$btn2_sub      = esc_html__( 'Smaller file · Smoother playback', 'pinterest-downloader' );
+	$reset_label   = esc_html__( 'Download another GIF', 'pinterest-downloader' );
+} else {
+	$btn1_title    = esc_html__( 'Download MP4', 'pinterest-downloader' );
+	$btn1_sub      = esc_html__( 'No watermark · Best quality', 'pinterest-downloader' );
+	$btn2_title    = esc_html__( 'HD Version', 'pinterest-downloader' );
+	$btn2_sub      = esc_html__( 'Highest resolution available', 'pinterest-downloader' );
+	$btn3_title    = esc_html__( 'Download Cover Image', 'pinterest-downloader' );
+	$btn3_sub      = esc_html__( 'Full resolution · Original JPG', 'pinterest-downloader' );
+	$reset_label   = esc_html__( 'Download another video', 'pinterest-downloader' );
+}
 ?>
 <div class="pd-result-container">
 
@@ -17,7 +44,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		<div class="pd-result-top">
 			<div class="pd-result-flex">
 
-				<!-- Thumbnail with duration badge -->
+				<!-- Thumbnail with duration badge (Fix 4) -->
 				<div class="pd-result-thumb-box">
 					<img
 						id="pd-result-thumbnail"
@@ -40,6 +67,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					</h2>
 
 					<div class="pd-result-badges">
+						<!-- Video Duration Badge (Fix 4) -->
+						<span id="pd-result-duration-badge" class="pd-badge pd-badge--duration" hidden>
+							<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none"
+							     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+								<circle cx="12" cy="12" r="10"></circle>
+								<polyline points="12 6 12 12 16 14"></polyline>
+							</svg>
+							<span id="pd-result-duration-text">Duration: 0:00</span>
+						</span>
 						<span class="pd-badge pd-badge--nowm">
 							<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none"
 							     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
@@ -59,104 +95,243 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		<!-- Divider -->
 		<div class="pd-result-divider"></div>
 
-		<!-- Format Buttons -->
+		<!-- Format Buttons (Fix 3: Context-aware labels and buttons) -->
 		<div class="pd-result-formats">
 
 			<p class="pd-formats-label"><?php esc_html_e( 'Choose Format', 'pinterest-downloader' ); ?></p>
 
-			<!-- 1. MP4 — royal blue gradient (TikSav dl-btn-mp4) -->
-			<a
-				id="pd-btn-mp4"
-				href="#"
-				class="pd-dl-btn pd-dl-btn--mp4"
-				target="_blank"
-				rel="noopener noreferrer"
-				download
-			>
-				<div class="pd-dl-icon" aria-hidden="true">
-					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none"
-					     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+			<?php if ( $is_img_page ) : ?>
+				<!-- IMAGE PAGE BUTTONS -->
+				<!-- 1. Download Image — Primary Gradient -->
+				<a
+					id="pd-btn-img"
+					href="#"
+					class="pd-dl-btn pd-dl-btn--mp4"
+					target="_blank"
+					rel="noopener noreferrer"
+					download
+				>
+					<div class="pd-dl-icon" aria-hidden="true">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none"
+						     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+							<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+							<circle cx="8.5" cy="8.5" r="1.5"/>
+							<polyline points="21 15 16 10 5 21"/>
+						</svg>
+					</div>
+					<div class="pd-dl-text">
+						<div class="pd-dl-title" id="pd-img-title">
+							<?php echo $btn1_title; ?>
+						</div>
+						<div class="pd-dl-subtitle" id="pd-img-subtitle">
+							<?php echo $btn1_sub; ?>
+						</div>
+					</div>
+					<svg class="pd-dl-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+					     fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
 						<path stroke-linecap="round" stroke-linejoin="round"
-						      d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.889L15 14M4 6h8a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2z"/>
+						      d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 11l5 5 5-5M12 4v12"/>
 					</svg>
-				</div>
-				<div class="pd-dl-text">
-					<div class="pd-dl-title" id="pd-mp4-title">
-						<?php esc_html_e( 'Download MP4', 'pinterest-downloader' ); ?>
-					</div>
-					<div class="pd-dl-subtitle">
-						<?php esc_html_e( 'No watermark · Best quality', 'pinterest-downloader' ); ?>
-					</div>
-				</div>
-				<svg class="pd-dl-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-				     fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
-					<path stroke-linecap="round" stroke-linejoin="round"
-					      d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 11l5 5 5-5M12 4v12"/>
-				</svg>
-			</a>
+				</a>
 
-			<!-- 2. HD — white with royal border (TikSav dl-btn-hd) -->
-			<a
-				id="pd-btn-hd"
-				href="#"
-				class="pd-dl-btn pd-dl-btn--hd"
-				target="_blank"
-				rel="noopener noreferrer"
-				download
-			>
-				<div class="pd-dl-icon" aria-hidden="true">
-					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none"
-					     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+				<!-- 2. HD Version -->
+				<a
+					id="pd-btn-hd"
+					href="#"
+					class="pd-dl-btn pd-dl-btn--hd"
+					target="_blank"
+					rel="noopener noreferrer"
+					download
+				>
+					<div class="pd-dl-icon" aria-hidden="true">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none"
+						     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+							<path stroke-linecap="round" stroke-linejoin="round"
+							      d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+						</svg>
+					</div>
+					<div class="pd-dl-text">
+						<div class="pd-dl-title" id="pd-hd-title">
+							<?php echo $btn2_title; ?>
+						</div>
+						<div class="pd-dl-subtitle" id="pd-hd-subtitle">
+							<?php echo $btn2_sub; ?>
+						</div>
+					</div>
+					<svg class="pd-dl-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+					     fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
 						<path stroke-linecap="round" stroke-linejoin="round"
-						      d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+						      d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 11l5 5 5-5M12 4v12"/>
 					</svg>
-				</div>
-				<div class="pd-dl-text">
-					<div class="pd-dl-title">
-						<?php esc_html_e( 'HD Version', 'pinterest-downloader' ); ?>
-					</div>
-					<div class="pd-dl-subtitle">
-						<?php esc_html_e( 'Highest resolution available', 'pinterest-downloader' ); ?>
-					</div>
-				</div>
-				<svg class="pd-dl-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-				     fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
-					<path stroke-linecap="round" stroke-linejoin="round"
-					      d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 11l5 5 5-5M12 4v12"/>
-				</svg>
-			</a>
+				</a>
 
-			<!-- 3. Cover Image — sky blue (TikSav dl-btn-mp3 style) -->
-			<a
-				id="pd-btn-img"
-				href="#"
-				class="pd-dl-btn pd-dl-btn--img"
-				target="_blank"
-				rel="noopener noreferrer"
-				download
-			>
-				<div class="pd-dl-icon" aria-hidden="true">
-					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none"
-					     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-						<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-						<circle cx="8.5" cy="8.5" r="1.5"/>
-						<polyline points="21 15 16 10 5 21"/>
+				<!-- Hidden MP4 button (Images do not download as MP4) -->
+				<a id="pd-btn-mp4" href="#" class="pd-dl-btn pd-dl-btn--mp4" style="display: none;" download></a>
+
+			<?php elseif ( $is_gif_page ) : ?>
+				<!-- GIF PAGE BUTTONS -->
+				<!-- 1. Download GIF — Primary Gradient -->
+				<a
+					id="pd-btn-img"
+					href="#"
+					class="pd-dl-btn pd-dl-btn--mp4"
+					target="_blank"
+					rel="noopener noreferrer"
+					download
+				>
+					<div class="pd-dl-icon" aria-hidden="true">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none"
+						     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+							<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+							<circle cx="8.5" cy="8.5" r="1.5"/>
+							<polyline points="21 15 16 10 5 21"/>
+						</svg>
+					</div>
+					<div class="pd-dl-text">
+						<div class="pd-dl-title" id="pd-img-title">
+							<?php echo $btn1_title; ?>
+						</div>
+						<div class="pd-dl-subtitle" id="pd-img-subtitle">
+							<?php echo $btn1_sub; ?>
+						</div>
+					</div>
+					<svg class="pd-dl-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+					     fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+						<path stroke-linecap="round" stroke-linejoin="round"
+						      d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 11l5 5 5-5M12 4v12"/>
 					</svg>
-				</div>
-				<div class="pd-dl-text">
-					<div class="pd-dl-title" id="pd-img-title">
-						<?php esc_html_e( 'Download Cover Image', 'pinterest-downloader' ); ?>
+				</a>
+
+				<!-- 2. Download MP4 Loop -->
+				<a
+					id="pd-btn-mp4"
+					href="#"
+					class="pd-dl-btn pd-dl-btn--hd"
+					target="_blank"
+					rel="noopener noreferrer"
+					download
+				>
+					<div class="pd-dl-icon" aria-hidden="true">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none"
+						     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+							<path stroke-linecap="round" stroke-linejoin="round"
+							      d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.889L15 14M4 6h8a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2z"/>
+						</svg>
 					</div>
-					<div class="pd-dl-subtitle">
-						<?php esc_html_e( 'Full resolution · Original JPG', 'pinterest-downloader' ); ?>
+					<div class="pd-dl-text">
+						<div class="pd-dl-title" id="pd-mp4-title">
+							<?php echo $btn2_title; ?>
+						</div>
+						<div class="pd-dl-subtitle" id="pd-mp4-subtitle">
+							<?php echo $btn2_sub; ?>
+						</div>
 					</div>
-				</div>
-				<svg class="pd-dl-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-				     fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
-					<path stroke-linecap="round" stroke-linejoin="round"
-					      d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 11l5 5 5-5M12 4v12"/>
-				</svg>
-			</a>
+					<svg class="pd-dl-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+					     fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+						<path stroke-linecap="round" stroke-linejoin="round"
+						      d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 11l5 5 5-5M12 4v12"/>
+					</svg>
+				</a>
+
+				<!-- Hidden HD button (Cover image not relevant for GIFs) -->
+				<a id="pd-btn-hd" href="#" class="pd-dl-btn pd-dl-btn--hd" style="display: none;" download></a>
+
+			<?php else : ?>
+				<!-- VIDEO PAGE BUTTONS (Default) -->
+				<!-- 1. MP4 — royal blue gradient (TikSav dl-btn-mp4) -->
+				<a
+					id="pd-btn-mp4"
+					href="#"
+					class="pd-dl-btn pd-dl-btn--mp4"
+					target="_blank"
+					rel="noopener noreferrer"
+					download
+				>
+					<div class="pd-dl-icon" aria-hidden="true">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none"
+						     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+							<path stroke-linecap="round" stroke-linejoin="round"
+							      d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.889L15 14M4 6h8a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2z"/>
+						</svg>
+					</div>
+					<div class="pd-dl-text">
+						<div class="pd-dl-title" id="pd-mp4-title">
+							<?php echo $btn1_title; ?>
+						</div>
+						<div class="pd-dl-subtitle" id="pd-mp4-subtitle">
+							<?php echo $btn1_sub; ?>
+						</div>
+					</div>
+					<svg class="pd-dl-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+					     fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+						<path stroke-linecap="round" stroke-linejoin="round"
+						      d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 11l5 5 5-5M12 4v12"/>
+					</svg>
+				</a>
+
+				<!-- 2. HD — white with royal border (TikSav dl-btn-hd) -->
+				<a
+					id="pd-btn-hd"
+					href="#"
+					class="pd-dl-btn pd-dl-btn--hd"
+					target="_blank"
+					rel="noopener noreferrer"
+					download
+				>
+					<div class="pd-dl-icon" aria-hidden="true">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none"
+						     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+							<path stroke-linecap="round" stroke-linejoin="round"
+							      d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+						</svg>
+					</div>
+					<div class="pd-dl-text">
+						<div class="pd-dl-title" id="pd-hd-title">
+							<?php echo $btn2_title; ?>
+						</div>
+						<div class="pd-dl-subtitle" id="pd-hd-subtitle">
+							<?php echo $btn2_sub; ?>
+						</div>
+					</div>
+					<svg class="pd-dl-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+					     fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+						<path stroke-linecap="round" stroke-linejoin="round"
+						      d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 11l5 5 5-5M12 4v12"/>
+					</svg>
+				</a>
+
+				<!-- 3. Cover Image — sky blue (TikSav dl-btn-mp3 style) -->
+				<a
+					id="pd-btn-img"
+					href="#"
+					class="pd-dl-btn pd-dl-btn--img"
+					target="_blank"
+					rel="noopener noreferrer"
+					download
+				>
+					<div class="pd-dl-icon" aria-hidden="true">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none"
+						     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+							<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+							<circle cx="8.5" cy="8.5" r="1.5"/>
+							<polyline points="21 15 16 10 5 21"/>
+						</svg>
+					</div>
+					<div class="pd-dl-text">
+						<div class="pd-dl-title" id="pd-img-title">
+							<?php echo $btn3_title; ?>
+						</div>
+						<div class="pd-dl-subtitle" id="pd-img-subtitle">
+							<?php echo $btn3_sub; ?>
+						</div>
+					</div>
+					<svg class="pd-dl-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+					     fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+						<path stroke-linecap="round" stroke-linejoin="round"
+						      d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 11l5 5 5-5M12 4v12"/>
+					</svg>
+				</a>
+			<?php endif; ?>
 
 		</div>
 
@@ -168,8 +343,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	<!-- Reset button (TikSav style — royal blue text, no bg) -->
 	<div class="pd-reset-wrap">
-		<button type="button" class="pd-reset-btn" data-pd-reset="true">
-			<span>↩ <?php esc_html_e( 'Download another video', 'pinterest-downloader' ); ?></span>
+		<button type="button" class="pd-reset-btn" id="pd-reset-btn" data-pd-reset="true">
+			<span>↩ <span id="pd-reset-btn-text"><?php echo $reset_label; ?></span></span>
 		</button>
 	</div>
 

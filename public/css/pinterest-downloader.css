@@ -121,16 +121,44 @@
   background: #eff6ff;
 }
 
-/* ── Hero — full royal-blue gradient ──────────────────────────────── */
+/* ── Site Branding & Logo Alignment (Fix 1) ─────────────────────── */
+.site-branding,
+.site-header .site-branding,
+.navbar-brand,
+.site-logo {
+  display: flex !important;
+  align-items: center !important;
+}
+
+.site-logo img,
+.custom-logo,
+.custom-logo-link img,
+.site-branding img {
+  height: 40px !important;
+  width: 40px !important;
+  margin-right: 8px !important;
+  vertical-align: middle !important;
+  object-fit: contain !important;
+}
+
+/* ── Hero — full royal-blue gradient (Fix 2: Compact TikSav Spacing) ── */
+.pd-hero,
+.pin-downloader-hero,
+.plugin-hero,
+[class*="hero"] {
+  padding-top: 40px !important;
+  padding-bottom: 40px !important;
+}
+
 .pd-hero {
   background: linear-gradient(160deg, #1a3fd4 0%, #2152e8 35%, #1e45d6 65%, #1535b8 100%);
-  padding: 48px 16px 64px;
+  padding: 40px 16px !important;
   text-align: center;
 }
 
 @media (min-width: 640px) {
   .pd-hero {
-    padding: 64px 16px 80px;
+    padding: 40px 16px !important;
   }
 }
 
@@ -146,7 +174,7 @@
   color: #ffffff;
   line-height: 1.15;
   letter-spacing: -0.025em;
-  margin-bottom: 20px;
+  margin-bottom: 14px;
 }
 
 .pd-hero__subtitle {
@@ -155,7 +183,7 @@
   font-weight: 500;
   color: rgba(255,255,255,0.80);
   max-width: 576px;
-  margin: 0 auto 40px;
+  margin: 0 auto 20px;
   line-height: 1.6;
 }
 
@@ -517,6 +545,13 @@
   font-weight: 600;
   padding: 4px 10px;
   border-radius: 9999px;
+}
+
+.pd-badge--duration {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+  font-weight: 700;
 }
 
 .pd-badge--nowm {

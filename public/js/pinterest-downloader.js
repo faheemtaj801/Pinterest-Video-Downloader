@@ -113,14 +113,21 @@
   const inputSection = wrapper.querySelector( '#pd-input-section' );
 
   // Result card elements (TikSav Style)
-  const resultThumbnail    = wrapper.querySelector( '#pd-result-thumbnail' );
-  const resultDuration     = wrapper.querySelector( '#pd-result-duration' );
-  const resultTitle        = wrapper.querySelector( '#pd-result-title' );
-  const btnMp4             = wrapper.querySelector( '#pd-btn-mp4' );
-  const btnHd              = wrapper.querySelector( '#pd-btn-hd' );
-  const btnImg             = wrapper.querySelector( '#pd-btn-img' );
-  const mp4Title           = wrapper.querySelector( '#pd-mp4-title' );
-  const imgTitle           = wrapper.querySelector( '#pd-img-title' );
+  const resultThumbnail     = wrapper.querySelector( '#pd-result-thumbnail' );
+  const resultDuration      = wrapper.querySelector( '#pd-result-duration' );
+  const resultDurationBadge = wrapper.querySelector( '#pd-result-duration-badge' );
+  const resultDurationText  = wrapper.querySelector( '#pd-result-duration-text' );
+  const resultTitle         = wrapper.querySelector( '#pd-result-title' );
+  const btnMp4              = wrapper.querySelector( '#pd-btn-mp4' );
+  const btnHd               = wrapper.querySelector( '#pd-btn-hd' );
+  const btnImg              = wrapper.querySelector( '#pd-btn-img' );
+  const mp4Title            = wrapper.querySelector( '#pd-mp4-title' );
+  const hdTitle             = wrapper.querySelector( '#pd-hd-title' );
+  const imgTitle            = wrapper.querySelector( '#pd-img-title' );
+  const mp4Subtitle         = wrapper.querySelector( '#pd-mp4-subtitle' );
+  const hdSubtitle          = wrapper.querySelector( '#pd-hd-subtitle' );
+  const imgSubtitle         = wrapper.querySelector( '#pd-img-subtitle' );
+  const resetBtnText        = wrapper.querySelector( '#pd-reset-btn-text' );
 
   // Error card elements
   const errorTitle = wrapper.querySelector( '#pd-error-title' );
@@ -268,6 +275,51 @@
     return mediaUrl;
   }
 
+  // ─── Duration Formatter (Fix 4) ───────────────────────────────────────────
+
+  /**
+   * Formats raw duration (seconds, ms, ISO string, or formatted string) into M:SS (e.g. 0:45, 1:23).
+   *
+   * @param {string|number} raw
+   * @return {string} Formatted duration string e.g. "0:45"
+   */
+  function formatDuration( raw ) {
+    if ( ! raw ) return '';
+
+    // Handle ISO 8601 string (e.g. PT45S, PT1M15S, PT0M32S)
+    if ( typeof raw === 'string' && /^PT/i.test( raw ) ) {
+      const m = raw.match( /PT(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?/i );
+      if ( m ) {
+        const mins = parseInt( m[1] || '0', 10 );
+        const secs = Math.round( parseFloat( m[2] || '0' ) );
+        return mins + ':' + ( secs < 10 ? '0' : '' ) + secs;
+      }
+    }
+
+    // Handle string format like "00:45" or "0:45" or "01:23"
+    if ( typeof raw === 'string' && raw.includes( ':' ) ) {
+      const parts = raw.split( ':' );
+      if ( parts.length === 2 ) {
+        const mins = parseInt( parts[0], 10 );
+        const secs = parseInt( parts[1], 10 );
+        return ( isNaN( mins ) ? 0 : mins ) + ':' + ( secs < 10 ? '0' : '' ) + ( isNaN( secs ) ? '00' : secs );
+      }
+      return raw.trim();
+    }
+
+    // Handle numeric values (seconds or milliseconds)
+    const num = parseFloat( raw );
+    if ( ! isNaN( num ) && num > 0 ) {
+      // If greater than 1000, value is almost certainly in milliseconds
+      const totalSecs = num > 1000 ? Math.round( num / 1000 ) : Math.round( num );
+      const mins      = Math.floor( totalSecs / 60 );
+      const secs      = totalSecs % 60;
+      return mins + ':' + ( secs < 10 ? '0' : '' ) + secs;
+    }
+
+    return String( raw );
+  }
+
   // ─── Result Population (TikSav Signature Card) ────────────────────────────
 
   /**
@@ -286,14 +338,52 @@
       resultThumbnail.alt = data.title || 'Pinterest media preview';
     }
 
-    // 2. Duration Tag
-    if ( resultDuration ) {
-      if ( isVideo && data.duration ) {
-        resultDuration.textContent = data.duration;
-        resultDuration.hidden = false;
+    // 2. Video Duration (Fix 4: M:SS format on thumbnail badge and metadata badge)
+    const rawDuration = data.duration || data.duration_ms || data.duration_seconds || data.video_duration || null;
+    let formattedDuration = formatDuration( rawDuration );
+
+    if ( isVideo ) {
+      if ( formattedDuration ) {
+        if ( resultDuration ) {
+          resultDuration.textContent = formattedDuration;
+          resultDuration.hidden = false;
+        }
+        if ( resultDurationBadge && resultDurationText ) {
+          resultDurationText.textContent = 'Duration: ' + formattedDuration;
+          resultDurationBadge.hidden = false;
+        }
       } else {
-        resultDuration.hidden = true;
+        // Duration not in API response: attempt to probe duration from HTML5 video metadata
+        if ( resultDuration ) resultDuration.hidden = true;
+        if ( resultDurationBadge ) resultDurationBadge.hidden = true;
+
+        if ( data.media_url && typeof Audio !== 'undefined' ) {
+          try {
+            const probeVideo = document.createElement( 'video' );
+            probeVideo.preload = 'metadata';
+            probeVideo.src = data.media_url;
+            probeVideo.onloadedmetadata = function () {
+              if ( probeVideo.duration && ! isNaN( probeVideo.duration ) && probeVideo.duration > 0 ) {
+                const detected = formatDuration( probeVideo.duration );
+                if ( resultDuration ) {
+                  resultDuration.textContent = detected;
+                  resultDuration.hidden = false;
+                }
+                if ( resultDurationBadge && resultDurationText ) {
+                  resultDurationText.textContent = 'Duration: ' + detected;
+                  resultDurationBadge.hidden = false;
+                }
+              }
+            };
+          } catch ( e ) {
+            // Silently ignore probing errors
+          }
+        }
       }
+    } else {
+      // Non-video media (Images / GIFs) don't have video duration badges
+      if ( resultDuration ) resultDuration.hidden = true;
+      if ( resultDurationBadge ) resultDurationBadge.hidden = true;
     }
 
     // 3. Title
@@ -304,60 +394,114 @@
     // 4. Filename base
     const cleanTitle = data.title ? data.title.replace( /[^a-z0-9_-]/gi, '_' ).toLowerCase().substring( 0, 40 ) : 'pinterest-download';
 
-    // 5. Format Buttons Configuration
-    if ( isVideo ) {
-      // Find 720p HD variant if present, or use primary video URL
-      let hdUrl = data.media_url;
-      if ( Array.isArray( data.variants ) && data.variants.length > 0 ) {
-        const hdVariant = data.variants.find( function ( v ) {
-          return v.quality === '720p' || ( v.label && v.label.includes( '720' ) );
-        } );
-        if ( hdVariant && hdVariant.url ) {
-          hdUrl = hdVariant.url;
-        }
+    // 5. HD Variant Extraction
+    let hdUrl = data.media_url;
+    if ( Array.isArray( data.variants ) && data.variants.length > 0 ) {
+      const hdVariant = data.variants.find( function ( v ) {
+        return v.quality === '720p' || ( v.label && v.label.includes( '720' ) ) || v.quality === 'orig' || v.quality === 'HD';
+      } );
+      if ( hdVariant && hdVariant.url ) {
+        hdUrl = hdVariant.url;
+      }
+    }
+
+    // 6. Format Buttons Configuration (Fix 3: Contextual button labels per page type)
+    const isImagePage = ( 'image' === downloaderType );
+    const isGifPage   = ( 'gif' === downloaderType );
+
+    if ( isImagePage || ( ! isVideo && ! isGif && ! isGifPage ) ) {
+      // ─── IMAGE DOWNLOADER PAGE ──────────────────────────────────────────────
+      // Button 1: Download Image — Full resolution · Original quality
+      if ( btnImg ) {
+        btnImg.style.display = 'flex';
+        if ( imgTitle ) imgTitle.textContent = 'Download Image';
+        if ( imgSubtitle ) imgSubtitle.textContent = 'Full resolution · Original quality';
+        btnImg.href = buildStreamerUrl( data.media_url, cleanTitle + '.jpg' );
+        btnImg.setAttribute( 'download', cleanTitle + '.jpg' );
       }
 
-      // Configure MP4 button
+      // Button 2: HD Version — Highest resolution available
+      if ( btnHd ) {
+        btnHd.style.display = 'flex';
+        if ( hdTitle ) hdTitle.textContent = 'HD Version';
+        if ( hdSubtitle ) hdSubtitle.textContent = 'Highest resolution available';
+        btnHd.href = buildStreamerUrl( hdUrl || data.media_url, cleanTitle + '-hd.jpg' );
+        btnHd.setAttribute( 'download', cleanTitle + '-hd.jpg' );
+      }
+
+      // Remove or hide the MP4 option (Images don't download as MP4)
+      if ( btnMp4 ) {
+        btnMp4.style.display = 'none';
+      }
+
+      if ( resetBtnText ) {
+        resetBtnText.textContent = 'Download another image';
+      }
+
+    } else if ( isGifPage || isGif ) {
+      // ─── GIF DOWNLOADER PAGE ────────────────────────────────────────────────
+      const gifMediaUrl = ( isGif && data.media_url ) ? data.media_url : ( data.thumbnail_url || data.media_url );
+      const loopMediaUrl = data.video_url || ( isVideo ? data.media_url : '' ) || data.media_url;
+
+      // Button 1: Download GIF — Animated · Original format
+      if ( btnImg ) {
+        btnImg.style.display = 'flex';
+        if ( imgTitle ) imgTitle.textContent = 'Download GIF';
+        if ( imgSubtitle ) imgSubtitle.textContent = 'Animated · Original format';
+        btnImg.href = buildStreamerUrl( gifMediaUrl, cleanTitle + '.gif' );
+        btnImg.setAttribute( 'download', cleanTitle + '.gif' );
+      }
+
+      // Button 2: Download MP4 Loop — Smaller file · Smoother playback
       if ( btnMp4 ) {
         btnMp4.style.display = 'flex';
+        if ( mp4Title ) mp4Title.textContent = 'Download MP4 Loop';
+        if ( mp4Subtitle ) mp4Subtitle.textContent = 'Smaller file · Smoother playback';
+        btnMp4.href = buildStreamerUrl( loopMediaUrl, cleanTitle + '-loop.mp4' );
+        btnMp4.setAttribute( 'download', cleanTitle + '-loop.mp4' );
+      }
+
+      // Remove or hide Cover Image option (Not relevant for GIFs)
+      if ( btnHd ) {
+        btnHd.style.display = 'none';
+      }
+
+      if ( resetBtnText ) {
+        resetBtnText.textContent = 'Download another GIF';
+      }
+
+    } else {
+      // ─── VIDEO DOWNLOADER PAGE (Default) ────────────────────────────────────
+      // Button 1: Download MP4 — No watermark · Best quality
+      if ( btnMp4 ) {
+        btnMp4.style.display = 'flex';
+        if ( mp4Title ) mp4Title.textContent = 'Download MP4';
+        if ( mp4Subtitle ) mp4Subtitle.textContent = 'No watermark · Best quality';
         btnMp4.href = buildStreamerUrl( data.media_url, cleanTitle + '.mp4' );
         btnMp4.setAttribute( 'download', cleanTitle + '.mp4' );
       }
 
-      // Configure HD button
+      // Button 2: HD Version — Highest resolution available
       if ( btnHd ) {
         btnHd.style.display = 'flex';
+        if ( hdTitle ) hdTitle.textContent = 'HD Version';
+        if ( hdSubtitle ) hdSubtitle.textContent = 'Highest resolution available';
         btnHd.href = buildStreamerUrl( hdUrl, cleanTitle + '-hd.mp4' );
         btnHd.setAttribute( 'download', cleanTitle + '-hd.mp4' );
       }
 
-      // Configure Cover Image button
+      // Button 3: Download Cover Image — Full resolution · Original JPG
       if ( btnImg ) {
         btnImg.style.display = 'flex';
-        if ( imgTitle ) {
-          imgTitle.textContent = 'Download Cover Image';
-        }
+        if ( imgTitle ) imgTitle.textContent = 'Download Cover Image';
+        if ( imgSubtitle ) imgSubtitle.textContent = 'Full resolution · Original JPG';
         const imgUrl = data.thumbnail_url || data.media_url;
         btnImg.href = buildStreamerUrl( imgUrl, cleanTitle + '-cover.jpg' );
         btnImg.setAttribute( 'download', cleanTitle + '-cover.jpg' );
       }
 
-    } else {
-      // Image or GIF mode
-      if ( btnMp4 ) {
-        btnMp4.style.display = 'none';
-      }
-      if ( btnHd ) {
-        btnHd.style.display = 'none';
-      }
-      if ( btnImg ) {
-        btnImg.style.display = 'flex';
-        if ( imgTitle ) {
-          imgTitle.textContent = isGif ? 'Download Animated GIF' : 'Download Original Image';
-        }
-        const ext = isGif ? '.gif' : '.jpg';
-        btnImg.href = buildStreamerUrl( data.media_url, cleanTitle + ext );
-        btnImg.setAttribute( 'download', cleanTitle + ext );
+      if ( resetBtnText ) {
+        resetBtnText.textContent = 'Download another video';
       }
     }
   }

@@ -247,9 +247,15 @@ class PD_Pinterest_Provider implements PD_Provider_Interface {
 			$extracted['title'] = substr( $pin_data['description'], 0, 80 );
 		}
 
-		// Duration.
+		// Duration (Fix 4: Check duration, duration_ms, duration_seconds, videos.duration).
 		if ( ! empty( $pin_data['duration'] ) ) {
 			$extracted['duration'] = $this->format_duration( $pin_data['duration'] );
+		} elseif ( ! empty( $pin_data['duration_ms'] ) ) {
+			$extracted['duration'] = $this->format_duration( $pin_data['duration_ms'] );
+		} elseif ( ! empty( $pin_data['duration_seconds'] ) ) {
+			$extracted['duration'] = $this->format_duration( $pin_data['duration_seconds'] );
+		} elseif ( ! empty( $pin_data['videos']['duration'] ) ) {
+			$extracted['duration'] = $this->format_duration( $pin_data['videos']['duration'] );
 		}
 
 		// Videos from video_list.
@@ -551,6 +557,17 @@ class PD_Pinterest_Provider implements PD_Provider_Interface {
 			$data['thumbnail_url'] = $data['image_url'];
 		}
 
+		// Duration scan (og:video:duration, schema duration, or duration_ms/duration_seconds).
+		if ( empty( $data['duration'] ) ) {
+			if ( preg_match( '/<meta[^>]*property=["\']og:video:duration["\'][^>]*content=["\']([^"\']+)["\']/i', $html, $dur_m ) ) {
+				$data['duration'] = $this->format_duration( $dur_m[1] );
+			} elseif ( preg_match( '/"duration"\s*:\s*["\']([^"\']+)["\']/i', $clean, $dur_m ) ) {
+				$data['duration'] = $this->format_duration( $dur_m[1] );
+			} elseif ( preg_match( '/"(?:duration|duration_ms|duration_seconds)"\s*:\s*(\d+)/i', $clean, $dur_m ) ) {
+				$data['duration'] = $this->format_duration( $dur_m[1] );
+			}
+		}
+
 		return $data;
 	}
 
@@ -571,7 +588,7 @@ class PD_Pinterest_Provider implements PD_Provider_Interface {
 			'thumbnail_url' => $oembed['thumbnail_url'] ?: ( $html['thumbnail_url'] ?? '' ),
 			'width'         => null,
 			'height'        => null,
-			'duration'      => null,
+			'duration'      => $html['duration'] ?? null,
 			'variants'      => $html['variants'] ?? array(),
 		);
 		return $merged;
@@ -588,6 +605,85 @@ class PD_Pinterest_Provider implements PD_Provider_Interface {
 	private function build_result( array $data, $source_url, $requested_type ) {
 		$is_video = ! empty( $data['video_url'] );
 
+		// GIF Mode: supply animated GIF and MP4 loop
+		if ( 'gif' === $requested_type ) {
+			$gif_url  = ! empty( $data['image_url'] ) ? $data['image_url'] : ( $data['thumbnail_url'] ?? '' );
+			$loop_url = ! empty( $data['video_url'] ) ? $data['video_url'] : $gif_url;
+
+			$gif_variants = array(
+				array(
+					'label'   => esc_html__( 'Download GIF (Animated)', 'pinterest-downloader' ),
+					'quality' => 'GIF',
+					'url'     => $gif_url,
+					'format'  => 'gif',
+				),
+			);
+			if ( ! empty( $data['video_url'] ) ) {
+				$gif_variants[] = array(
+					'label'   => esc_html__( 'Download MP4 Loop', 'pinterest-downloader' ),
+					'quality' => 'MP4',
+					'url'     => $data['video_url'],
+					'format'  => 'mp4',
+				);
+			}
+
+			return PD_Provider_Result::success(
+				array(
+					'media_type'    => 'gif',
+					'format'        => 'gif',
+					'media_url'     => $gif_url,
+					'video_url'     => $loop_url,
+					'thumbnail_url' => $gif_url,
+					'title'         => ! empty( $data['title'] ) ? $data['title'] : esc_html__( 'Pinterest GIF', 'pinterest-downloader' ),
+					'width'         => ! empty( $data['width'] ) ? $data['width'] : null,
+					'height'        => ! empty( $data['height'] ) ? $data['height'] : null,
+					'duration'      => ! empty( $data['duration'] ) ? $data['duration'] : null,
+					'source_url'    => $source_url,
+					'variants'      => $gif_variants,
+				)
+			);
+		}
+
+		// Image Mode: supply full original image and HD variant
+		if ( 'image' === $requested_type ) {
+			$img_url = ! empty( $data['image_url'] ) ? $data['image_url'] : ( $data['thumbnail_url'] ?? '' );
+			if ( empty( $img_url ) ) {
+				return PD_Provider_Result::error(
+					'IMAGE_NOT_FOUND',
+					esc_html__( 'No downloadable image was found for this Pin.', 'pinterest-downloader' )
+				);
+			}
+
+			return PD_Provider_Result::success(
+				array(
+					'media_type'    => 'image',
+					'format'        => 'jpg',
+					'media_url'     => $img_url,
+					'thumbnail_url' => $img_url,
+					'title'         => ! empty( $data['title'] ) ? $data['title'] : esc_html__( 'Pinterest Image', 'pinterest-downloader' ),
+					'width'         => ! empty( $data['width'] ) ? $data['width'] : null,
+					'height'        => ! empty( $data['height'] ) ? $data['height'] : null,
+					'duration'      => null,
+					'source_url'    => $source_url,
+					'variants'      => array(
+						array(
+							'label'   => esc_html__( 'Original Resolution', 'pinterest-downloader' ),
+							'quality' => 'Original',
+							'url'     => $img_url,
+							'format'  => 'jpg',
+						),
+						array(
+							'label'   => esc_html__( 'HD Version', 'pinterest-downloader' ),
+							'quality' => 'HD',
+							'url'     => $img_url,
+							'format'  => 'jpg',
+						),
+					),
+				)
+			);
+		}
+
+		// Video was requested and found
 		if ( $is_video ) {
 			$variants = ! empty( $data['variants'] ) ? $data['variants'] : array();
 
@@ -649,7 +745,7 @@ class PD_Pinterest_Provider implements PD_Provider_Interface {
 			);
 		}
 
-		// Image / GIF result.
+		// Image / GIF fallback result.
 		$img_url    = $data['image_url'];
 		$img_ext    = strtolower( pathinfo( wp_parse_url( $img_url, PHP_URL_PATH ), PATHINFO_EXTENSION ) );
 		$is_gif     = ( 'gif' === $img_ext ) || ( ! empty( $data['format'] ) && 'gif' === strtolower( $data['format'] ) );
@@ -788,21 +884,26 @@ class PD_Pinterest_Provider implements PD_Provider_Interface {
 	}
 
 	/**
-	 * Formats ISO 8601 duration (e.g. PT15S) or numeric seconds into MM:SS.
+	 * Formats ISO 8601 duration (e.g. PT15S) or numeric seconds into M:SS (e.g. 0:45, 1:23).
 	 *
 	 * @param string|int|float $duration Raw duration.
-	 * @return string Formatted string e.g. "00:15".
+	 * @return string Formatted string e.g. "0:45".
 	 */
 	private function format_duration( $duration ) {
 		if ( empty( $duration ) ) {
 			return '';
 		}
 
+		// Handle preformatted MM:SS or M:SS string (e.g. 00:45 -> 0:45)
+		if ( is_string( $duration ) && preg_match( '/^0?(\d+):(\d{2})$/', trim( $duration ), $m ) ) {
+			return sprintf( '%d:%02d', intval( $m[1] ), intval( $m[2] ) );
+		}
+
 		// ISO 8601 duration e.g. PT0M15S or PT15S or PT1M30S.
 		if ( is_string( $duration ) && preg_match( '/PT(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?/i', $duration, $m ) ) {
 			$mins = ! empty( $m[1] ) ? intval( $m[1] ) : 0;
-			$secs = ! empty( $m[2] ) ? intval( $m[2] ) : 0;
-			return sprintf( '%02d:%02d', $mins, $secs );
+			$secs = ! empty( $m[2] ) ? round( floatval( $m[2] ) ) : 0;
+			return sprintf( '%d:%02d', $mins, $secs );
 		}
 
 		// Numeric seconds or milliseconds.
@@ -814,7 +915,7 @@ class PD_Pinterest_Provider implements PD_Provider_Interface {
 			}
 			$mins     = floor( $secs / 60 );
 			$rem_secs = $secs % 60;
-			return sprintf( '%02d:%02d', $mins, $rem_secs );
+			return sprintf( '%d:%02d', $mins, $rem_secs );
 		}
 
 		return sanitize_text_field( (string) $duration );
