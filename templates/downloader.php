@@ -680,7 +680,8 @@ if ( $is_gif ) {
     justify-content: center !important;
     flex-wrap: wrap !important;
     gap: 8px !important;
-    margin: 0 auto 32px auto !important;
+    margin: 12px auto 16px auto !important;
+    padding: 0 16px !important;
   }
 
   .pd-app .pd-pill-link {
@@ -999,12 +1000,8 @@ if ( $is_gif ) {
 		<?php if ( 'tool' !== $layout ) : ?>
 		<!-- ── Quick Navigation Pills Bar ──────────────────────────── -->
 		<div class="pd-nav-pills">
-			<a href="#pd-how-it-works" class="pd-pill-link">&#8595; How It Works</a>
-			<a href="#pd-device-guide" class="pd-pill-link">&#8595; Device Guide</a>
-			<a href="#pd-troubleshooting" class="pd-pill-link">&#8595; Troubleshooting</a>
-			<a href="#pd-faq" class="pd-pill-link">&#8595; FAQ</a>
-			<a href="/pinterest-image-downloader/" class="pd-pill-link">&#128444; Images</a>
-			<a href="/pinterest-gif-downloader/" class="pd-pill-link">&#127916; GIFs</a>
+			<a href="/pinterest-image-downloader/" class="pd-pill-link">&#128444; <?php esc_html_e( 'Pinterest Image Downloader', 'pinterest-downloader' ); ?></a>
+			<a href="/pinterest-gif-downloader/" class="pd-pill-link">&#127916; <?php esc_html_e( 'Pinterest GIF Downloader', 'pinterest-downloader' ); ?></a>
 		</div>
 		<?php endif; ?>
 
