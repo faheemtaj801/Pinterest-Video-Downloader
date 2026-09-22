@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Settings Page — PinDownloady.
+ * Plugin Settings Page — SnatchClip.
  *
  * Provides a simple WordPress admin settings page.
  * No Yoast or Rank Math required — all SEO is handled automatically.
@@ -40,9 +40,9 @@ class PD_Settings {
 	 */
 	public static function get( $key = null ) {
 		$defaults = array(
-			'site_name'         => 'PinDownloady',
+			'site_name'         => 'SnatchClip',
 			'tagline'           => 'Free Pinterest Video Downloader',
-			'terms_url'         => '/terms-of-service/',
+			'terms_url'         => 'https://snatchclip.com/terms-of-service/',
 			'privacy_url'       => '/privacy-policy/',
 			'contact_url'       => '/contact/',
 			'video_page_url'    => '/pinterest-video-downloader/',
@@ -67,8 +67,8 @@ class PD_Settings {
 	 */
 	public function add_menu_page() {
 		add_options_page(
-			'PinDownloady Settings',
-			'PinDownloady',
+			'SnatchClip Settings',
+			'SnatchClip',
 			'manage_options',
 			self::PAGE_SLUG,
 			array( $this, 'render_settings_page' )
@@ -133,7 +133,7 @@ class PD_Settings {
 	public function sanitize_settings( $input ) {
 		$clean = array();
 
-		$clean['site_name']        = sanitize_text_field( $input['site_name'] ?? 'PinDownloady' );
+		$clean['site_name']        = sanitize_text_field( $input['site_name'] ?? 'SnatchClip' );
 		$clean['tagline']          = sanitize_text_field( $input['tagline'] ?? '' );
 		$clean['terms_url']        = sanitize_text_field( $input['terms_url'] ?? '/terms-of-service/' );
 		$clean['privacy_url']      = sanitize_text_field( $input['privacy_url'] ?? '/privacy-policy/' );
@@ -162,8 +162,8 @@ class PD_Settings {
 		<div class="wrap pd-admin-wrap">
 
 			<h1>
-				<img src="<?php echo esc_url( $logo_url ); ?>" alt="PinDownloady" />
-				PinDownloady — Settings
+				<img src="<?php echo esc_url( $logo_url ); ?>" alt="SnatchClip" />
+				SnatchClip — Settings
 			</h1>
 
 			<form method="post" action="options.php">
@@ -177,7 +177,7 @@ class PD_Settings {
 					<div class="pd-field-row">
 						<label for="pd_site_name">Site Name</label>
 						<input type="text" id="pd_site_name" name="<?php echo self::OPTION_NAME; ?>[site_name]"
-							value="<?php echo esc_attr( $opts['site_name'] ); ?>" placeholder="PinDownloady" />
+							value="<?php echo esc_attr( $opts['site_name'] ); ?>" placeholder="SnatchClip" />
 					</div>
 
 					<div class="pd-field-row">

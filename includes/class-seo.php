@@ -70,12 +70,12 @@ class PD_SEO {
 		}
 
 		if ( 'image' === $type ) {
-			return 'Pinterest Image Downloader — Download High-Res Photos | PinDownloady';
+			return 'Pinterest Image Downloader — Download High-Res Photos | SnatchClip';
 		} elseif ( 'gif' === $type ) {
-			return 'Pinterest GIF Downloader — Save Animated GIFs & Loops | PinDownloady';
+			return 'Pinterest GIF Downloader — Save Animated GIFs & Loops | SnatchClip';
 		}
 
-		return 'Pinterest Video Downloader — Save HD Videos Without Watermark | PinDownloady';
+		return 'Pinterest Video Downloader — Save HD Videos Without Watermark | SnatchClip';
 	}
 
 	/**
@@ -94,17 +94,17 @@ class PD_SEO {
 		$canonical_url = esc_url( get_permalink() );
 
 		if ( 'image' === $type ) {
-			$title = 'Pinterest Image Downloader — PinDownloady';
+			$title = 'Pinterest Image Downloader — SnatchClip';
 			$desc  = 'Download Pinterest photos, wallpapers, and images in full original HD quality. 100% free, fast, and no registration required.';
 		} elseif ( 'gif' === $type ) {
-			$title = 'Pinterest GIF Downloader — PinDownloady';
+			$title = 'Pinterest GIF Downloader — SnatchClip';
 			$desc  = 'Download Pinterest animated GIFs and video loops in high resolution. Fast, free, and works on all devices.';
 		} else {
-			$title = 'Pinterest Video Downloader — PinDownloady';
+			$title = 'Pinterest Video Downloader — SnatchClip';
 			$desc  = 'Download Pinterest videos without watermark in 720p HD MP4. Fast, secure, and 100% free browser-based tool for all devices.';
 		}
 
-		echo "\n<!-- PinDownloady Automatic SEO Meta Tags -->\n";
+		echo "\n<!-- SnatchClip Automatic SEO Meta Tags -->\n";
 		echo '<meta name="description" content="' . esc_attr( $desc ) . '" />' . "\n";
 		echo '<link rel="canonical" href="' . $canonical_url . '" />' . "\n";
 		echo '<meta property="og:locale" content="en_US" />' . "\n";
@@ -112,11 +112,11 @@ class PD_SEO {
 		echo '<meta property="og:title" content="' . esc_attr( $title ) . '" />' . "\n";
 		echo '<meta property="og:description" content="' . esc_attr( $desc ) . '" />' . "\n";
 		echo '<meta property="og:url" content="' . $canonical_url . '" />' . "\n";
-		echo '<meta property="og:site_name" content="PinDownloady" />' . "\n";
+		echo '<meta property="og:site_name" content="SnatchClip" />' . "\n";
 		echo '<meta name="twitter:card" content="summary_large_image" />' . "\n";
 		echo '<meta name="twitter:title" content="' . esc_attr( $title ) . '" />' . "\n";
 		echo '<meta name="twitter:description" content="' . esc_attr( $desc ) . '" />' . "\n";
-		echo "<!-- /PinDownloady Automatic SEO Meta Tags -->\n\n";
+		echo "<!-- /SnatchClip Automatic SEO Meta Tags -->\n\n";
 	}
 
 	/**
@@ -133,7 +133,7 @@ class PD_SEO {
 		$schema = array(
 			'@context'            => 'https://schema.org',
 			'@type'               => 'WebApplication',
-			'name'                => 'PinDownloady',
+			'name'                => 'SnatchClip',
 			'url'                 => $page_url,
 			'applicationCategory' => 'MultimediaApplication',
 			'operatingSystem'     => 'All (iOS, Android, Windows, macOS, Linux)',
@@ -146,8 +146,8 @@ class PD_SEO {
 			'description'         => 'Free online Pinterest video and media downloader without watermarks in HD quality.',
 		);
 
-		echo "\n<!-- PinDownloady Structured Data (Schema.org) -->\n";
+		echo "\n<!-- SnatchClip Structured Data (Schema.org) -->\n";
 		echo '<script type="application/ld+json">' . wp_json_encode( $schema, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT ) . '</script>' . "\n";
-		echo "<!-- /PinDownloady Structured Data -->\n\n";
+		echo "<!-- /SnatchClip Structured Data -->\n\n";
 	}
 }

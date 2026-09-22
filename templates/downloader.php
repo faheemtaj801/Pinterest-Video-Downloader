@@ -1,6 +1,6 @@
 <?php
 /**
- * Main downloader wrapper template — PinDownloady (Optimized for WordPress & All Devices).
+ * Main downloader wrapper template — SnatchClip (Optimized for WordPress & All Devices).
  *
  * @package Pinterest_Downloader
  */
@@ -89,7 +89,7 @@ if ( $is_gif ) {
     object-fit: contain !important;
   }
 
-  /* ── Hero Box (Ultra-compact — 1 line gap only) ─────────────────── */
+  /* ── Hero Box (TikSav-matched spacing — 40px top/bottom) ───────── */
   .pd-app .pd-hero,
   .pd-hero,
   .pin-hero,
@@ -101,8 +101,8 @@ if ( $is_gif ) {
   [class*="pd-hero"],
   [class*="pin-hero"],
   [class*="hero"] {
-    padding-top: 20px !important;
-    padding-bottom: 20px !important;
+    padding-top: 40px !important;
+    padding-bottom: 40px !important;
     min-height: unset !important;
   }
 
@@ -171,7 +171,7 @@ if ( $is_gif ) {
     font-weight: 800 !important;
     line-height: 1.15 !important;
     letter-spacing: -0.025em !important;
-    margin: 0 0 6px 0 !important;
+    margin: 0 0 14px 0 !important;
     text-align: center !important;
   }
 
@@ -182,7 +182,7 @@ if ( $is_gif ) {
     font-weight: 400 !important;
     line-height: 1.5 !important;
     max-width: 600px !important;
-    margin: 0 auto 12px auto !important;
+    margin: 0 auto 20px auto !important;
     text-align: center !important;
   }
 
@@ -287,7 +287,7 @@ if ( $is_gif ) {
   }
 
   .pd-app .pd-terms-note {
-    margin-top: 8px !important;
+    margin-top: 14px !important;
     font-size: 13px !important;
     color: rgba(255, 255, 255, 0.65) !important;
     text-align: center !important;
