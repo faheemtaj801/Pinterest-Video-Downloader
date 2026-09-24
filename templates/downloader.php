@@ -1,6 +1,6 @@
 <?php
 /**
- * Main downloader wrapper template — SnatchClip (Optimized for WordPress & All Devices).
+ * Main downloader wrapper template — ClickPin (Optimized for WordPress & All Devices).
  *
  * @package Pinterest_Downloader
  */
@@ -14,7 +14,7 @@ if ( $is_gif ) {
 	$hero_subtitle = esc_html__( 'Download Pinterest GIFs in original animated format', 'pinterest-downloader' );
 } elseif ( $is_video ) {
 	$hero_title    = esc_html__( 'Pinterest Video Downloader', 'pinterest-downloader' );
-	$hero_subtitle = esc_html__( 'Download supported Pinterest videos from a Pin URL — no software, no account login. Paste the link, preview the available video, and save it to your device.', 'pinterest-downloader' );
+	$hero_subtitle = esc_html__( 'Download Pinterest Videos without watermark in HD for Free', 'pinterest-downloader' );
 } else {
 	$hero_title    = esc_html__( 'Pinterest Image Downloader', 'pinterest-downloader' );
 	$hero_subtitle = esc_html__( 'Download Pinterest images in full original resolution', 'pinterest-downloader' );

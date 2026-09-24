@@ -114,10 +114,10 @@ class PD_Plugin {
 			return;
 		}
 		$ga_id = sanitize_text_field( $ga_id );
-		echo "\n<!-- SnatchClip Google Analytics -->\n";
+		echo "\n<!-- ClickPin Google Analytics -->\n";
 		echo '<script async src="https://www.googletagmanager.com/gtag/js?id=' . esc_attr( $ga_id ) . '"></script>' . "\n";
 		echo '<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag(\'js\',new Date());gtag(\'config\',' . wp_json_encode( $ga_id ) . ');</script>' . "\n";
-		echo "<!-- /SnatchClip Google Analytics -->\n\n";
+		echo "<!-- /ClickPin Google Analytics -->\n\n";
 	}
 
 	/**
